@@ -27,13 +27,14 @@ namespace com.ktgame.animation_sequencer
             Nothing
         }
         public AnimationStepBase[] AnimationSteps => _animationSteps;
+        public float PlaybackSpeed => _playbackSpeed;
         
         [SerializeReference] private AnimationStepBase[] _animationSteps = Array.Empty<AnimationStepBase>();
         [SerializeField] private UpdateType _updateType = UpdateType.Normal;
         [SerializeField] private bool _timeScaleIndependent = false;
         [SerializeField] private AutoplayType _autoplayMode = AutoplayType.Awake;
         [SerializeField] protected bool _startPaused;
-        [SerializeField] private float _playbackSpeed = 1f; public float PlaybackSpeed => _playbackSpeed;
+        [SerializeField] private float _playbackSpeed = 1f; 
         [SerializeField] protected PlayType _playType = PlayType.Forward;
         [SerializeField] private int _loops = 0;
         [SerializeField] private LoopType _loopType = LoopType.Restart;
@@ -59,7 +60,7 @@ namespace com.ktgame.animation_sequencer
 
         private Sequence _playingSequence;
         public Sequence PlayingSequence => _playingSequence;
-        private PlayType playTypeInternal = PlayType.Forward;
+        private PlayType _playTypeInternal = PlayType.Forward;
 #if UNITY_EDITOR
         private bool _requiresReset = false;
 #endif
@@ -130,7 +131,7 @@ namespace com.ktgame.animation_sequencer
 
         public virtual void Play(Action onCompleteCallback)
         {
-            playTypeInternal = _playType;
+            _playTypeInternal = _playType;
 
             ClearPlayingSequence();
 
@@ -141,7 +142,7 @@ namespace com.ktgame.animation_sequencer
 
             _playingSequence = GenerateSequence();
 
-            switch (playTypeInternal)
+            switch (_playTypeInternal)
             {
                 case PlayType.Backward:
                     _playingSequence.PlayBackwards();
@@ -164,7 +165,7 @@ namespace com.ktgame.animation_sequencer
                 Play();
             }
 
-            playTypeInternal = PlayType.Forward;
+            _playTypeInternal = PlayType.Forward;
 
             if (onCompleteCallback != null)
             {
@@ -186,7 +187,7 @@ namespace com.ktgame.animation_sequencer
                 Play();
             }
 
-            playTypeInternal = PlayType.Backward;
+            _playTypeInternal = PlayType.Backward;
 
             if (onCompleteCallback != null)
             {
@@ -302,7 +303,7 @@ namespace com.ktgame.animation_sequencer
             // a Start and Finish callback is always fired.
             sequence.AppendCallback(() =>
             {
-                if (playTypeInternal == PlayType.Forward)
+                if (_playTypeInternal == PlayType.Forward)
                 {
                     _onStartEvent.Invoke();
                 }
@@ -325,7 +326,7 @@ namespace com.ktgame.animation_sequencer
             // See comment above regarding bookending via AppendCallback.
             sequence.AppendCallback(() =>
             {
-                if (playTypeInternal == PlayType.Forward)
+                if (_playTypeInternal == PlayType.Forward)
                 {
                     _onFinishedEvent.Invoke();
                 }

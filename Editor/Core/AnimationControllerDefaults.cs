@@ -8,7 +8,7 @@ namespace com.ktgame.animation_sequencer.editor
 	{
 		public CustomEase DefaultEasing => _defaultEasing;
 		public bool PreferUsingPreviousActionEasing => _preferUsingPreviousActionEasing;
-		public DOTweenActionBase.AnimationDirection DefaultDirection => defaultDirection;
+		public DOTweenActionBase.AnimationDirection DefaultDirection => _defaultDirection;
 		public bool PreferUsingPreviousDirection => _preferUsingPreviousDirection;
 		public bool UseRelative => _useRelative;
 		public bool PreferUsingPreviousRelativeValue => _preferUsingPreviousRelativeValue;
@@ -23,7 +23,7 @@ namespace com.ktgame.animation_sequencer.editor
 
 		[SerializeField] private CustomEase _defaultEasing = CustomEase.InOutQuad;
 		[SerializeField] private bool _preferUsingPreviousActionEasing = true;
-		[SerializeField] private DOTweenActionBase.AnimationDirection defaultDirection = DOTweenActionBase.AnimationDirection.To;
+		[SerializeField] private DOTweenActionBase.AnimationDirection _defaultDirection = DOTweenActionBase.AnimationDirection.To;
 		[SerializeField] private bool _preferUsingPreviousDirection = true;
 		[SerializeField] private bool _useRelative = false;
 		[SerializeField] private bool _preferUsingPreviousRelativeValue = true;

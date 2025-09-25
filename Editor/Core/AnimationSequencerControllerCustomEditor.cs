@@ -42,7 +42,7 @@ namespace com.ktgame.animation_sequencer.editor
         private void OnEnable()
         {
             _sequencerController = target as AnimationSequencerController;
-            _reorderableList = new ReorderableList(serializedObject, serializedObject.FindProperty("animationSteps"), true, false, true, true);
+            _reorderableList = new ReorderableList(serializedObject, serializedObject.FindProperty("_animationSteps"), true, false, true, true);
             _reorderableList.drawElementCallback += OnDrawAnimationStep;
             _reorderableList.drawElementBackgroundCallback += OnDrawAnimationStepBackground;
             _reorderableList.elementHeightCallback += GetAnimationStepHeight;
@@ -109,7 +109,7 @@ namespace com.ktgame.animation_sequencer.editor
             if (Application.isPlaying)
                 return;
 
-            SerializedProperty progressSP = serializedObject.FindProperty("progress");
+            SerializedProperty progressSP = serializedObject.FindProperty("_progress");
             if (progressSP == null || Mathf.Approximately(progressSP.floatValue, -1))
                 return;
             
@@ -152,7 +152,7 @@ namespace com.ktgame.animation_sequencer.editor
             arrayElementAtIndex.managedReferenceValue = managedReferenceValue;
         
             //TODO copy from last step would be better here.
-            SerializedProperty targetSerializedProperty = arrayElementAtIndex.FindPropertyRelative("target");
+            SerializedProperty targetSerializedProperty = arrayElementAtIndex.FindPropertyRelative("_target");
             if (targetSerializedProperty != null)
                 targetSerializedProperty.objectReferenceValue = (serializedObject.targetObject as AnimationSequencerController)?.gameObject;
             
@@ -199,8 +199,10 @@ namespace com.ktgame.animation_sequencer.editor
         private void DrawAnimationStepsHeader(Rect rect, bool foldout)
         {
             if (!foldout)
+            {
                 return;
-            
+            }
+
             var collapseAllRect = new Rect(rect)
             {
                 xMin = rect.xMax - 50,
@@ -228,7 +230,9 @@ namespace com.ktgame.animation_sequencer.editor
         {
             bool wasGUIEnabled = GUI.enabled;
             if (DOTweenEditorPreview.isPreviewing)
+            {
                 GUI.enabled = false;
+            }
 
             _reorderableList.DoLayoutList();
                         
@@ -240,9 +244,9 @@ namespace com.ktgame.animation_sequencer.editor
             bool wasGUIEnabled = GUI.enabled;
             if (DOTweenEditorPreview.isPreviewing)
                 GUI.enabled = false;
-            SerializedProperty onStartEventSerializedProperty = serializedObject.FindProperty("onStartEvent");
-            SerializedProperty onFinishedEventSerializedProperty = serializedObject.FindProperty("onFinishedEvent");
-            SerializedProperty onProgressEventSerializedProperty = serializedObject.FindProperty("onProgressEvent");
+            SerializedProperty onStartEventSerializedProperty = serializedObject.FindProperty("_onStartEvent");
+            SerializedProperty onFinishedEventSerializedProperty = serializedObject.FindProperty("_onFinishedEvent");
+            SerializedProperty onProgressEventSerializedProperty = serializedObject.FindProperty("_onProgressEvent");
 
             
             using (EditorGUI.ChangeCheckScope changedCheck = new EditorGUI.ChangeCheckScope())
@@ -260,8 +264,8 @@ namespace com.ktgame.animation_sequencer.editor
 
         private void DrawSettingsHeader(Rect rect, bool foldout)
         {
-            var autoPlayModeSerializedProperty = serializedObject.FindProperty("autoplayMode");
-            var autoKillSerializedProperty = serializedObject.FindProperty("autoKill");
+            var autoPlayModeSerializedProperty = serializedObject.FindProperty("_autoplayMode");
+            var autoKillSerializedProperty = serializedObject.FindProperty("_autoKill");
 
             var autoplayMode = (AnimationSequencerController.AutoplayType) autoPlayModeSerializedProperty.enumValueIndex;
             var autoKill = autoKillSerializedProperty.boolValue;
@@ -277,8 +281,8 @@ namespace com.ktgame.animation_sequencer.editor
 
         private void DrawSettings()
         {
-            SerializedProperty autoPlayModeSerializedProperty = serializedObject.FindProperty("autoplayMode");
-            SerializedProperty pauseOnAwakeSerializedProperty = serializedObject.FindProperty("startPaused");
+            SerializedProperty autoPlayModeSerializedProperty = serializedObject.FindProperty("_autoplayMode");
+            SerializedProperty pauseOnAwakeSerializedProperty = serializedObject.FindProperty("_startPaused");
 
             using (EditorGUI.ChangeCheckScope changedCheck = new EditorGUI.ChangeCheckScope())
             {
@@ -298,12 +302,12 @@ namespace com.ktgame.animation_sequencer.editor
             if (DOTweenEditorPreview.isPreviewing)
                 GUI.enabled = false;
             
-            SerializedProperty updateTypeSerializedProperty = serializedObject.FindProperty("updateType");
-            SerializedProperty timeScaleIndependentSerializedProperty = serializedObject.FindProperty("timeScaleIndependent");
-            SerializedProperty sequenceDirectionSerializedProperty = serializedObject.FindProperty("playType");
-            SerializedProperty loopsSerializedProperty = serializedObject.FindProperty("loops");
-            SerializedProperty loopTypeSerializedProperty = serializedObject.FindProperty("loopType");
-            SerializedProperty autoKillSerializedProperty = serializedObject.FindProperty("autoKill");
+            SerializedProperty updateTypeSerializedProperty = serializedObject.FindProperty("_updateType");
+            SerializedProperty timeScaleIndependentSerializedProperty = serializedObject.FindProperty("_timeScaleIndependent");
+            SerializedProperty sequenceDirectionSerializedProperty = serializedObject.FindProperty("_playType");
+            SerializedProperty loopsSerializedProperty = serializedObject.FindProperty("_loops");
+            SerializedProperty loopTypeSerializedProperty = serializedObject.FindProperty("_loopType");
+            SerializedProperty autoKillSerializedProperty = serializedObject.FindProperty("_autoKill");
 
             using (EditorGUI.ChangeCheckScope changedCheck = new EditorGUI.ChangeCheckScope())
             {
@@ -334,7 +338,7 @@ namespace com.ktgame.animation_sequencer.editor
             GUILayout.FlexibleSpace();
             EditorGUI.BeginChangeCheck();
             
-            var playbackSpeedProperty = serializedObject.FindProperty("playbackSpeed");
+            var playbackSpeedProperty = serializedObject.FindProperty("_playbackSpeed");
             playbackSpeedProperty.floatValue = EditorGUILayout.Slider("Playback Speed", playbackSpeedProperty.floatValue, 0, 2);
 
             if (EditorGUI.EndChangeCheck())
@@ -468,10 +472,13 @@ namespace com.ktgame.animation_sequencer.editor
                     DOTweenEditorPreview.PrepareTweenForPreview(_sequencerController.PlayingSequence);
 
                     if (AnimationSequencerSettings.GetInstance().DrawTimingsWhenPreviewing)
-                        _previewingTimings = DOTweenProxy.GetTimings(_sequencerController.PlayingSequence,
-                            _sequencerController.AnimationSteps);
+                    {
+                        _previewingTimings = DOTweenProxy.GetTimings(_sequencerController.PlayingSequence, _sequencerController.AnimationSteps);
+                    }
                     else
+                    {
                         _previewingTimings = null;
+                    }
                 }
                 else
                 {
@@ -535,7 +542,7 @@ namespace com.ktgame.animation_sequencer.editor
 
                 if (!Application.isPlaying)
                 {
-                    serializedObject.FindProperty("progress").floatValue = tweenProgress;
+                    serializedObject.FindProperty("_progress").floatValue = tweenProgress;
                     serializedObject.ApplyModifiedProperties();
                 }
             }
@@ -546,19 +553,25 @@ namespace com.ktgame.animation_sequencer.editor
         private void SetProgress(float tweenProgress)
         {
             if (!_sequencerController.IsPlaying)
+            {
                 PlaySequence();
+            }
 
-            _sequencerController.PlayingSequence.Goto(tweenProgress *
-                                                     _sequencerController.PlayingSequence.Duration());
+            _sequencerController.PlayingSequence.Goto(tweenProgress * _sequencerController.PlayingSequence.Duration());
         }
 
         private float GetCurrentSequencerProgress()
         {
             float tweenProgress;
             if (_sequencerController.PlayingSequence != null && _sequencerController.PlayingSequence.IsActive())
+            {
                 tweenProgress = _sequencerController.PlayingSequence.ElapsedPercentage();
+            }
             else
+            {
                 tweenProgress = 0;
+            }
+
             return tweenProgress;
         }
 
@@ -676,7 +689,7 @@ namespace com.ktgame.animation_sequencer.editor
         private void OnDrawAnimationStep(Rect rect, int index, bool isActive, bool isFocused)
         {
             SerializedProperty element = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
-            SerializedProperty flowTypeSerializedProperty = element.FindPropertyRelative("flowType");
+            SerializedProperty flowTypeSerializedProperty = element.FindPropertyRelative("_flowType");
 
             if (!element.TryGetTargetObjectOfProperty(out AnimationStepBase animationStepBase))
                 return;
