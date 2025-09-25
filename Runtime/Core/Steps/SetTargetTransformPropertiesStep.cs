@@ -9,7 +9,8 @@ namespace com.ktgame.animation_sequencer
     public sealed class SetTargetTransformPropertiesStep : AnimationStepBase
     {
         public override string DisplayName => "Set Target Transform Properties";
-        [SerializeField] private Transform _targetTransform;
+        [FormerlySerializedAs("targetGameObject")] [SerializeField] private Transform targetTransform;
+        
         [SerializeField] private bool _useLocal;
         [SerializeField] private Vector3 _position;
         [SerializeField] private Vector3 _eulerAngles;
@@ -18,11 +19,7 @@ namespace com.ktgame.animation_sequencer
         private Vector3 _originalPosition;
         private Vector3 _originalEulerAngles;
         private Vector3 _originalScale;
-        public SetTargetTransformPropertiesStep(Vector3 originalScale)
-        {
-            _originalScale = originalScale;
-        }
-
+        
         public override void AddTweenToSequence(Sequence animationSequence)
         {
             Sequence behaviourSequence = DOTween.Sequence();
@@ -32,57 +29,51 @@ namespace com.ktgame.animation_sequencer
             {
                 if (_useLocal)
                 {
-                    _originalPosition = _targetTransform.localPosition;
-                    _originalEulerAngles = _targetTransform.localEulerAngles;
+                    _originalPosition = targetTransform.localPosition;
+                    _originalEulerAngles = targetTransform.localEulerAngles;
                     
-                    _targetTransform.localPosition = _position;
-                    _targetTransform.localEulerAngles = _eulerAngles;
+                    targetTransform.localPosition = _position;
+                    targetTransform.localEulerAngles = _eulerAngles;
                 }
                 else
                 {
-                    _originalPosition = _targetTransform.position;
-                    _originalEulerAngles = _targetTransform.eulerAngles;
+                    _originalPosition = targetTransform.position;
+                    _originalEulerAngles = targetTransform.eulerAngles;
                     
-                    _targetTransform.position = _position;
-                    _targetTransform.eulerAngles = _eulerAngles;
+                    targetTransform.position = _position;
+                    targetTransform.eulerAngles = _eulerAngles;
                 }
 
-                _originalScale = _targetTransform.localScale; 
-                _targetTransform.localScale = _scale;
+                _originalScale = targetTransform.localScale; 
+                targetTransform.localScale = _scale;
             });
             if (FlowType == FlowType.Join)
-            {
                 animationSequence.Join(behaviourSequence);
-            }
             else
-            {
                 animationSequence.Append(behaviourSequence);
-            }
         }
 
         public override void ResetToInitialState()
         {
             if (_useLocal)
             {
-                _targetTransform.localPosition = _originalPosition;
-                _targetTransform.localEulerAngles = _originalEulerAngles;
+                targetTransform.localPosition = _originalPosition;
+                targetTransform.localEulerAngles = _originalEulerAngles;
             }
             else
             {
-                _targetTransform.position = _originalPosition;
-                _targetTransform.eulerAngles = _originalEulerAngles;
+                targetTransform.position = _originalPosition;
+                targetTransform.eulerAngles = _originalEulerAngles;
             }
-            _targetTransform.localScale = _originalScale;
+            targetTransform.localScale = _originalScale;
         }
         
         public override string GetDisplayNameForEditor(int index)
         {
             string display = "NULL";
-            if (_targetTransform != null)
-            {
-                display = _targetTransform.name;
-            }
-
+            if (targetTransform != null)
+                display = targetTransform.name;
+            
             return $"{index}. Set {display} Transform Properties";
         }   
     }
