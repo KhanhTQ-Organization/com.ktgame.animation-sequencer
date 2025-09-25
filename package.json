@@ -1,0 +1,18 @@
+{
+  "name": "com.ktgame.animation-sequencer",
+  "version": "1.0.2",
+  "displayName": "com.ktgame.animation-sequencer",
+  "description": "Animation sequencer is a way to create complex animations of sequence of events by a friendly user interface. Requires DOTween v1.2.632",
+  "unity": "2021.3",
+  "author": {
+    "name": "ktgame",
+    "email": "khanhquang0912qh@gmail.com",
+    "url": "https://github.com/KhanhTQ-hub"
+  },
+  "dependencies": {
+    "com.ktgame.unitask": "1.0.3"
+  },
+  "publishConfig": {
+    "registry": "http://3.25.208.95:4873"
+  }
+}

@@ -1,0 +1,43 @@
+name: CI/CD - Release & Publish to Verdaccio
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release-and-publish:
+    name: 🔖 Release & 📦 Publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: 🛎 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: 🚀 Semantic Release
+        uses: cycjimmy/semantic-release-action@v3
+        with:
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/git
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📝 Configure .npmrc
+        run: |
+          echo "@com.ktgame:registry=http://3.25.208.95:4873/" >> ~/.npmrc
+          echo "//3.25.208.95:4873/:_authToken=${{ secrets.VERDACCIO_TOKEN }}" >> ~/.npmrc
+          echo "always-auth=true" >> ~/.npmrc
+      - name: 📦 Publish to Verdaccio
+        run: npm publish --access public
