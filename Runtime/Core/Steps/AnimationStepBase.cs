@@ -1,4 +1,3 @@
-#if DOTWEEN_ENABLED
 using System;
 using DG.Tweening;
 using UnityEngine;
@@ -26,4 +25,3 @@ namespace com.ktgame.animation_sequencer
 		}
 	}
 }
-#endif
