@@ -35,7 +35,7 @@ namespace com.ktgame.animation_sequencer
             Sequence sequence = DOTween.Sequence();
             for (int i = 0; i < _actions.Length; i++)
             {
-                Tween tween = _actions[i].GenerateTween(target, duration);
+                Tween tween = _actions[i].GenerateTween(_target, _duration);
                 if (i == 0)
                 {
                     tween.SetDelay(Delay);
@@ -66,9 +66,9 @@ namespace com.ktgame.animation_sequencer
         public override string GetDisplayNameForEditor(int index)
         {
             string targetName = "NULL";
-            if (target != null)
+            if (_target != null)
             {
-                targetName = target.name;
+                targetName = _target.name;
             }
 
             return $"{index}. {targetName}: {String.Join(", ", _actions.Select(action => action.DisplayName)).Truncate(45)}";

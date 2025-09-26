@@ -20,10 +20,10 @@ namespace com.ktgame.animation_sequencer.editor
 
                 if (AnimationControllerDefaults.Instance.PreferUsingPreviousDirection)
                 {
-                    SerializedProperty previousDirection = previousElement.FindPropertyRelative("direction");
+                    SerializedProperty previousDirection = previousElement.FindPropertyRelative("_direction");
                     if (previousDirection != null)
                     {
-                        SerializedProperty currentDirection = arrayElement.FindPropertyRelative("direction");
+                        SerializedProperty currentDirection = arrayElement.FindPropertyRelative("_direction");
                         if (currentDirection != null)
                             currentDirection.enumValueIndex = previousDirection.enumValueIndex;
                     }
@@ -31,17 +31,17 @@ namespace com.ktgame.animation_sequencer.editor
 
                 if (AnimationControllerDefaults.Instance.PreferUsingPreviousActionEasing)
                 {
-                    SerializedProperty previousEase = previousElement.FindPropertyRelative("ease").FindPropertyRelative("ease");
+                    SerializedProperty previousEase = previousElement.FindPropertyRelative("_ease").FindPropertyRelative("_ease");
                     if (previousEase != null)
                     {
-                        SerializedProperty currentEase = arrayElement.FindPropertyRelative("ease").FindPropertyRelative("ease");
+                        SerializedProperty currentEase = arrayElement.FindPropertyRelative("_ease").FindPropertyRelative("_ease");
                         if (currentEase != null)
                             currentEase.enumValueIndex = previousEase.enumValueIndex;
                     }
                 }
                 else
                 {
-                    SerializedProperty currentEase = arrayElement.FindPropertyRelative("ease").FindPropertyRelative("ease");
+                    SerializedProperty currentEase = arrayElement.FindPropertyRelative("_ease").FindPropertyRelative("_ease");
                     if (currentEase != null)
                         currentEase.enumValueIndex = (int) AnimationControllerDefaults.Instance.DefaultEasing.Ease;
                 }
@@ -49,10 +49,10 @@ namespace com.ktgame.animation_sequencer.editor
                 
                 if (AnimationControllerDefaults.Instance.PreferUsingPreviousRelativeValue)
                 {
-                    SerializedProperty previousEase = previousElement.FindPropertyRelative("isRelative");
+                    SerializedProperty previousEase = previousElement.FindPropertyRelative("_isRelative");
                     if (previousEase != null)
                     {
-                        SerializedProperty currentEase = arrayElement.FindPropertyRelative("isRelative");
+                        SerializedProperty currentEase = arrayElement.FindPropertyRelative("_isRelative");
                         if (currentEase != null)
                         {
                             currentEase.boolValue = previousEase.boolValue;
@@ -61,7 +61,7 @@ namespace com.ktgame.animation_sequencer.editor
                 }
                 else
                 {
-                    SerializedProperty currentEase = arrayElement.FindPropertyRelative("ease").FindPropertyRelative("ease");
+                    SerializedProperty currentEase = arrayElement.FindPropertyRelative("_ease").FindPropertyRelative("_ease");
                     if (currentEase != null)
                     {
                         currentEase.enumValueIndex = (int) AnimationControllerDefaults.Instance.DefaultEasing.Ease;
@@ -72,19 +72,19 @@ namespace com.ktgame.animation_sequencer.editor
             }
             else
             {
-                SerializedProperty currentEase = arrayElement.FindPropertyRelative("ease").FindPropertyRelative("ease");
+                SerializedProperty currentEase = arrayElement.FindPropertyRelative("_ease").FindPropertyRelative("_ease");
                 if (currentEase != null)
                 {
                     currentEase.enumValueIndex = (int) AnimationControllerDefaults.Instance.DefaultEasing.Ease;
                 }
 
-                SerializedProperty currentDirection = arrayElement.FindPropertyRelative("direction");
+                SerializedProperty currentDirection = arrayElement.FindPropertyRelative("_direction");
                 if (currentDirection != null)
                 {
                     currentDirection.enumValueIndex =  (int) AnimationControllerDefaults.Instance.DefaultDirection;
                 }
 
-                SerializedProperty isRelativeSerializedProperty = arrayElement.FindPropertyRelative("isRelative");
+                SerializedProperty isRelativeSerializedProperty = arrayElement.FindPropertyRelative("_isRelative");
                 if (isRelativeSerializedProperty != null)
                 {
                     isRelativeSerializedProperty.boolValue = AnimationControllerDefaults.Instance.UseRelative;
@@ -97,7 +97,7 @@ namespace com.ktgame.animation_sequencer.editor
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            DrawBaseGUI(position, property, label, "actions", "loopCount", "loopType");
+            DrawBaseGUI(position, property, label, "_actions", "_loopCount", "_loopType");
 
             float originHeight = position.y;
             if (property.isExpanded)
@@ -114,11 +114,11 @@ namespace com.ktgame.animation_sequencer.editor
 
                 EditorGUI.BeginChangeCheck();
 
-                SerializedProperty actionsSerializedProperty = property.FindPropertyRelative("actions");
-                SerializedProperty targetSerializedProperty = property.FindPropertyRelative("target");
+                SerializedProperty actionsSerializedProperty = property.FindPropertyRelative("_actions");
+                SerializedProperty targetSerializedProperty = property.FindPropertyRelative("_target");
                 position.y += base.GetPropertyHeight(property, label) + EditorGUIUtility.standardVerticalSpacing;
 
-                SerializedProperty loopCountSerializedProperty = property.FindPropertyRelative("loopCount");
+                SerializedProperty loopCountSerializedProperty = property.FindPropertyRelative("_loopCount");
                 EditorGUI.PropertyField(position, loopCountSerializedProperty);
                 position.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
                 loopCountSerializedProperty.intValue = Mathf.Clamp(loopCountSerializedProperty.intValue, -1, int.MaxValue);
@@ -131,7 +131,7 @@ namespace com.ktgame.animation_sequencer.editor
                                          "long time, more info here: https://github.com/Demigiant/dotween/issues/92");
                         loopCountSerializedProperty.intValue = int.MaxValue;
                     }
-                    SerializedProperty loopTypeSerializedProperty = property.FindPropertyRelative("loopType");
+                    SerializedProperty loopTypeSerializedProperty = property.FindPropertyRelative("_loopType");
                     EditorGUI.PropertyField(position, loopTypeSerializedProperty);
                     position.y += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
                 }
@@ -217,7 +217,7 @@ namespace com.ktgame.animation_sequencer.editor
 
         private static void DeleteElementAtIndex(SerializedProperty serializedProperty, int targetIndex)
         {
-            SerializedProperty actionsPropertyPath = serializedProperty.FindPropertyRelative("actions");
+            SerializedProperty actionsPropertyPath = serializedProperty.FindPropertyRelative("_actions");
             actionsPropertyPath.DeleteArrayElementAtIndex(targetIndex);
             SerializedPropertyExtensions.ClearPropertyCache(actionsPropertyPath.propertyPath);
             actionsPropertyPath.serializedObject.ApplyModifiedProperties();

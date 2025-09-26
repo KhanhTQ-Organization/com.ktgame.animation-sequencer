@@ -11,33 +11,33 @@ namespace com.ktgame.animation_sequencer
     public partial class CustomEase : IEquatable<CustomEase>
     {
         [SerializeField]
-        private Ease ease;
-        public Ease Ease => ease;
+        private Ease _ease;
+        public Ease Ease => _ease;
         [SerializeField]
-        private AnimationCurve curve;
+        private AnimationCurve _curve;
 
-        private EaseFunction easeFunction;
+        private EaseFunction _easeFunction;
 
 
-        public bool UseCustomCurve => ease == Ease.INTERNAL_Custom;
+        public bool UseCustomCurve => _ease == Ease.INTERNAL_Custom;
 
         public CustomEase(AnimationCurve curve)
         {
-            this.curve = curve;
-            ease = Ease.INTERNAL_Custom;
-            easeFunction = new EaseCurve(curve).Evaluate;
+            this._curve = curve;
+            _ease = Ease.INTERNAL_Custom;
+            _easeFunction = new EaseCurve(curve).Evaluate;
         }
 
         public CustomEase(Ease ease)
         {
-            this.ease = ease;
-            easeFunction = null;
-            curve = null;
+            this._ease = ease;
+            _easeFunction = null;
+            _curve = null;
         }
 
         public CustomEase()
         {
-            ease = Ease.InOutCirc;
+            _ease = Ease.InOutCirc;
         }
         
         public float Lerp(float from, float to, float fraction)
@@ -56,15 +56,15 @@ namespace com.ktgame.animation_sequencer
         {
             if (UseCustomCurve)
             {
-                if (easeFunction == null)
-                    easeFunction = new EaseCurve(curve).Evaluate;
+                if (_easeFunction == null)
+                    _easeFunction = new EaseCurve(_curve).Evaluate;
 
-                return EaseManager.Evaluate(Ease.INTERNAL_Custom, easeFunction, time, duration,
+                return EaseManager.Evaluate(Ease.INTERNAL_Custom, _easeFunction, time, duration,
                     overshootOrAmplitude, DOTween.defaultEasePeriod);
             }
             else
             {
-                return EaseManager.Evaluate(ease, null, time, duration,
+                return EaseManager.Evaluate(_ease, null, time, duration,
                     overshootOrAmplitude, DOTween.defaultEasePeriod);
             }
         }
@@ -73,11 +73,11 @@ namespace com.ktgame.animation_sequencer
         {
             if (UseCustomCurve)
             {
-                tweenParams.SetEase(curve);
+                tweenParams.SetEase(_curve);
             }
             else
             {
-                tweenParams.SetEase(ease);
+                tweenParams.SetEase(_ease);
             }
         }
 
@@ -85,17 +85,17 @@ namespace com.ktgame.animation_sequencer
         {
             if (UseCustomCurve)
             {
-                tween.SetEase(curve);
+                tween.SetEase(_curve);
             }
             else
             {
-                tween.SetEase(ease);
+                tween.SetEase(_ease);
             }
         }
 
         public bool Equals(CustomEase other)
         {
-            return ease == other.ease && (ease != Ease.INTERNAL_Custom || Equals(curve, other.curve));
+            return _ease == other._ease && (_ease != Ease.INTERNAL_Custom || Equals(_curve, other._curve));
         }
 
         public override bool Equals(object obj)
@@ -107,7 +107,7 @@ namespace com.ktgame.animation_sequencer
         {
             unchecked
             {
-                return ((int)ease * 397) ^ ((ease == Ease.INTERNAL_Custom && curve != null) ? curve.GetHashCode() : 0);
+                return ((int)_ease * 397) ^ ((_ease == Ease.INTERNAL_Custom && _curve != null) ? _curve.GetHashCode() : 0);
             }
         }
     }

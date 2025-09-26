@@ -12,7 +12,7 @@ namespace com.ktgame.animation_sequencer.editor
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            SerializedProperty easeProperty = property.FindPropertyRelative("ease");
+            SerializedProperty easeProperty = property.FindPropertyRelative("_ease");
 
             if (easeProperty.enumValueIndex == (int)Ease.INTERNAL_Custom)
             {
@@ -25,7 +25,7 @@ namespace com.ktgame.animation_sequencer.editor
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            SerializedProperty easeProperty = property.FindPropertyRelative("ease");
+            SerializedProperty easeProperty = property.FindPropertyRelative("_ease");
 
             string displayName = "Custom";
             if (easeProperty.enumValueIndex != (int)Ease.INTERNAL_Custom)
@@ -66,7 +66,7 @@ namespace com.ktgame.animation_sequencer.editor
 
             if (easeProperty.enumValueIndex == (int)Ease.INTERNAL_Custom)
             {
-                SerializedProperty curveProperty = property.FindPropertyRelative("curve");
+                SerializedProperty curveProperty = property.FindPropertyRelative("_curve");
                 position.y += EditorGUIUtility.singleLineHeight
                     + EditorGUIUtility.standardVerticalSpacing;
                 EditorGUI.PropertyField(position, curveProperty);
