@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/KhanhTQ-Organization/com.ktgame.animation-sequencer/compare/v1.0.4...v1.0.5) (2025-09-26)
+
+
+### Bug Fixes
+
+* update package ([5db196d](https://github.com/KhanhTQ-Organization/com.ktgame.animation-sequencer/commit/5db196d145ff2c9b0dbc99db9580e88a0bbba6a7))
+
 ## [1.0.4](https://github.com/KhanhTQ-Organization/com.ktgame.animation-sequencer/compare/v1.0.3...v1.0.4) (2025-09-25)
 
 
