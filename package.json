@@ -13,6 +13,6 @@
     "com.ktgame.unitask": "1.0.3"
   },
   "publishConfig": {
-    "registry": "http://3.25.208.95:4873"
+    "registry": "http://3.25.115.5:4873"
   }
 }

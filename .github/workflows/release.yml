@@ -36,8 +36,8 @@ jobs:
 
       - name: 📝 Configure .npmrc
         run: |
-          echo "@com.ktgame:registry=http://3.25.208.95:4873/" >> ~/.npmrc
-          echo "//3.25.208.95:4873/:_authToken=${{ secrets.VERDACCIO_TOKEN }}" >> ~/.npmrc
+          echo "@com.ktgame:registry=http://3.25.115.5:4873/" >> ~/.npmrc
+          echo "//3.25.115.5:4873/:_authToken=${{ secrets.VERDACCIO_TOKEN }}" >> ~/.npmrc
           echo "always-auth=true" >> ~/.npmrc
       - name: 📦 Publish to Verdaccio
         run: npm publish --access public
