@@ -1,3 +1,10 @@
+## [1.0.6](https://github.com/KhanhTQ-Organization/com.ktgame.animation-sequencer/compare/v1.0.5...v1.0.6) (2026-05-06)
+
+
+### Bug Fixes
+
+* rp ip scopemanager ([3a7fa7b](https://github.com/KhanhTQ-Organization/com.ktgame.animation-sequencer/commit/3a7fa7b0fe3679c5f797bfbab24bdb289e6b65fd))
+
 ## [1.0.5](https://github.com/KhanhTQ-Organization/com.ktgame.animation-sequencer/compare/v1.0.4...v1.0.5) (2025-09-26)
 
 
