@@ -1,3 +1,10 @@
+## [1.0.9](https://github.com/KhanhTQ-Organization/com.ktgame.animation-sequencer/compare/v1.0.8...v1.0.9) (2026-09-12)
+
+
+### Bug Fixes
+
+* remove referent ([970a433](https://github.com/KhanhTQ-Organization/com.ktgame.animation-sequencer/commit/970a433467ca12891b3e54b3833919c48e8ddc30))
+
 ## [1.0.8](https://github.com/KhanhTQ-Organization/com.ktgame.animation-sequencer/compare/v1.0.7...v1.0.8) (2026-09-12)
 
 
