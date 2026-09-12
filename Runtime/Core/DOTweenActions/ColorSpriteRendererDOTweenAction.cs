@@ -14,7 +14,7 @@ namespace BrunoMikoski.AnimationSequencer
         public override string DisplayName => "Color SpriteRenderer";
 
         [SerializeField]
-        private Color color;
+        private Color color = Color.white;
 
         private SpriteRenderer targetSpriteRenderer;
         private Color previousColor;

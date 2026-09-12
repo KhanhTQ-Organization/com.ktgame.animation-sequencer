@@ -14,7 +14,7 @@ namespace BrunoMikoski.AnimationSequencer
         public override string DisplayName => "Fade SpriteRenderer";
 
         [SerializeField]
-        private float alpha;
+        private float alpha = 1f;
         public float Alpha
         {
             get => alpha;
