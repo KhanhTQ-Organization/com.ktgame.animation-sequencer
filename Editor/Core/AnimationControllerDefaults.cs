@@ -1,39 +1,67 @@
+﻿#if DOTWEEN_ENABLED
 using DG.Tweening;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer.editor
+namespace BrunoMikoski.AnimationSequencer
 {
-	[CreateAssetMenu(menuName = "Animation Sequencer/Create Animation Sequencer Default", fileName = "AnimationControllerDefaults")]
-	public sealed class AnimationControllerDefaults : EditorDefaultResourceSingleton<AnimationControllerDefaults>
-	{
-		public CustomEase DefaultEasing => _defaultEasing;
-		public bool PreferUsingPreviousActionEasing => _preferUsingPreviousActionEasing;
-		public DOTweenActionBase.AnimationDirection DefaultDirection => _defaultDirection;
-		public bool PreferUsingPreviousDirection => _preferUsingPreviousDirection;
-		public bool UseRelative => _useRelative;
-		public bool PreferUsingPreviousRelativeValue => _preferUsingPreviousRelativeValue;
-		public AnimationSequencerController.AutoplayType AutoplayMode => _autoplayMode;
-		public bool PlayOnAwake => _playOnAwake;
-		public bool PauseOnAwake => _pauseOnAwake;
-		public bool TimeScaleIndependent => _timeScaleIndependent;
-		public AnimationSequencerController.PlayType PlayType => _playType;
-		public UpdateType UpdateType => _updateType;
-		public bool AutoKill => _autoKill;
-		public int Loops => _loops;
+    [CreateAssetMenu(menuName = "Animation Sequencer/Create Animation Sequencer Default", fileName = "AnimationControllerDefaults")]
+    public sealed class AnimationControllerDefaults : EditorDefaultResourceSingleton<AnimationControllerDefaults>
+    {
+        [SerializeField]
+        private CustomEase defaultEasing = CustomEase.InOutQuad;
+        public CustomEase DefaultEasing => defaultEasing;
 
-		[SerializeField] private CustomEase _defaultEasing = CustomEase.InOutQuad;
-		[SerializeField] private bool _preferUsingPreviousActionEasing = true;
-		[SerializeField] private DOTweenActionBase.AnimationDirection _defaultDirection = DOTweenActionBase.AnimationDirection.To;
-		[SerializeField] private bool _preferUsingPreviousDirection = true;
-		[SerializeField] private bool _useRelative = false;
-		[SerializeField] private bool _preferUsingPreviousRelativeValue = true;
-		[SerializeField] private AnimationSequencerController.AutoplayType _autoplayMode = AnimationSequencerController.AutoplayType.Awake;
-		[SerializeField] private bool _playOnAwake = false;
-		[SerializeField] private bool _pauseOnAwake = false;
-		[SerializeField] private bool _timeScaleIndependent = false;
-		[SerializeField] private AnimationSequencerController.PlayType _playType = AnimationSequencerController.PlayType.Forward;
-		[SerializeField] private UpdateType _updateType = UpdateType.Normal;
-		[SerializeField] private bool _autoKill = true;
-		[SerializeField] private int _loops = 0;
-	}
+        [SerializeField]
+        private bool preferUsingPreviousActionEasing = true;
+        public bool PreferUsingPreviousActionEasing => preferUsingPreviousActionEasing;
+
+        [SerializeField]
+        private DOTweenActionBase.AnimationDirection defaultDirection = DOTweenActionBase.AnimationDirection.To;
+        public DOTweenActionBase.AnimationDirection DefaultDirection => defaultDirection;
+        
+        [SerializeField]
+        private bool preferUsingPreviousDirection = true;
+        public bool PreferUsingPreviousDirection => preferUsingPreviousDirection;
+        
+        [SerializeField]
+        private bool useRelative = false;
+        public bool UseRelative => useRelative;
+        
+        [SerializeField]
+        private bool preferUsingPreviousRelativeValue = true;
+        public bool PreferUsingPreviousRelativeValue => preferUsingPreviousRelativeValue;
+        
+        [SerializeField]
+        private AnimationSequencerController.AutoplayType autoplayMode = AnimationSequencerController.AutoplayType.Awake;
+        public AnimationSequencerController.AutoplayType AutoplayMode => autoplayMode;
+        
+        [SerializeField]
+        private bool playOnAwake = false;
+        public bool PlayOnAwake => playOnAwake;
+        
+        [SerializeField]
+        private bool pauseOnAwake = false;
+        public bool PauseOnAwake => pauseOnAwake;
+        
+        [SerializeField]
+        private bool timeScaleIndependent = false;
+        public bool TimeScaleIndependent => timeScaleIndependent;
+        
+        [SerializeField]
+        private AnimationSequencerController.PlayType playType = AnimationSequencerController.PlayType.Forward;
+        public AnimationSequencerController.PlayType PlayType => playType;
+        
+        [SerializeField]
+        private UpdateType updateType = UpdateType.Normal;
+        public UpdateType UpdateType => updateType;
+        
+        [SerializeField]
+        private bool autoKill = true;
+        public bool AutoKill => autoKill;
+        
+        [SerializeField]
+        private int loops = 0;
+        public int Loops => loops;
+    }
 }
+#endif

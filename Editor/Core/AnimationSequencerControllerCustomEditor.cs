@@ -1,3 +1,4 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using DG.DOTweenEditor;
 using DG.Tweening;
@@ -6,7 +7,7 @@ using UnityEditor.IMGUI.Controls;
 using UnityEditorInternal;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer.editor
+namespace BrunoMikoski.AnimationSequencer
 {
     [CustomEditor(typeof(AnimationSequencerController), true)]
     public class AnimationSequencerControllerCustomEditor : Editor
@@ -14,42 +15,43 @@ namespace com.ktgame.animation_sequencer.editor
         private static readonly GUIContent CollapseAllAnimationStepsContent = new GUIContent("▸◂", "Collapse all animation steps");
         private static readonly GUIContent ExpandAllAnimationStepsContent   = new GUIContent("◂▸", "Expand all animation steps");
 
-        private ReorderableList _reorderableList;
-        private AnimationSequencerController _sequencerController;
+        private ReorderableList reorderableList;
+        
+        private AnimationSequencerController sequencerController;
 
-        private static AnimationStepAdvancedDropdown _cachedAnimationStepsDropdown;
+        private static AnimationStepAdvancedDropdown cachedAnimationStepsDropdown;
         private static AnimationStepAdvancedDropdown AnimationStepAdvancedDropdown
         {
             get
             {
-                if (_cachedAnimationStepsDropdown == null)
-                    _cachedAnimationStepsDropdown = new AnimationStepAdvancedDropdown(new AdvancedDropdownState());
-                return _cachedAnimationStepsDropdown;
+                if (cachedAnimationStepsDropdown == null)
+                    cachedAnimationStepsDropdown = new AnimationStepAdvancedDropdown(new AdvancedDropdownState());
+                return cachedAnimationStepsDropdown;
             }
         }
 
-        private bool _showPreviewPanel = true;
-        private bool _showSettingsPanel;
-        private bool _showCallbacksPanel;
-        private bool _showSequenceSettingsPanel;
-        private bool _showStepsPanel = true;
-        private float _tweenTimeScale = 1f;
-        private bool _wasShowingStepsPanel;
-        private bool _justStartPreviewing;
+        private bool showPreviewPanel = true;
+        private bool showSettingsPanel;
+        private bool showCallbacksPanel;
+        private bool showSequenceSettingsPanel;
+        private bool showStepsPanel = true;
+        private float tweenTimeScale = 1f;
+        private bool wasShowingStepsPanel;
+        private bool justStartPreviewing;
 
-        private (float start, float end)[] _previewingTimings;
+        private (float start, float end)[] previewingTimings;
 
         private void OnEnable()
         {
-            _sequencerController = target as AnimationSequencerController;
-            _reorderableList = new ReorderableList(serializedObject, serializedObject.FindProperty("_animationSteps"), true, false, true, true);
-            _reorderableList.drawElementCallback += OnDrawAnimationStep;
-            _reorderableList.drawElementBackgroundCallback += OnDrawAnimationStepBackground;
-            _reorderableList.elementHeightCallback += GetAnimationStepHeight;
-            _reorderableList.onAddDropdownCallback += OnClickToAddNew;
-            _reorderableList.onRemoveCallback += OnClickToRemove;
-            _reorderableList.onReorderCallback += OnListOrderChanged;
-            _reorderableList.drawHeaderCallback += OnDrawerHeader;
+            sequencerController = target as AnimationSequencerController;
+            reorderableList = new ReorderableList(serializedObject, serializedObject.FindProperty("animationSteps"), true, false, true, true);
+            reorderableList.drawElementCallback += OnDrawAnimationStep;
+            reorderableList.drawElementBackgroundCallback += OnDrawAnimationStepBackground;
+            reorderableList.elementHeightCallback += GetAnimationStepHeight;
+            reorderableList.onAddDropdownCallback += OnClickToAddNew;
+            reorderableList.onRemoveCallback += OnClickToRemove;
+            reorderableList.onReorderCallback += OnListOrderChanged;
+            reorderableList.drawHeaderCallback += OnDrawerHeader;
             EditorApplication.update += EditorUpdate;
             EditorApplication.playModeStateChanged += OnEditorPlayModeChanged;
             
@@ -76,13 +78,13 @@ namespace com.ktgame.animation_sequencer.editor
 
         private void OnDisable()
         {
-            _reorderableList.drawElementCallback -= OnDrawAnimationStep;
-            _reorderableList.drawElementBackgroundCallback -= OnDrawAnimationStepBackground;
-            _reorderableList.elementHeightCallback -= GetAnimationStepHeight;
-            _reorderableList.onAddDropdownCallback -= OnClickToAddNew;
-            _reorderableList.onRemoveCallback -= OnClickToRemove;
-            _reorderableList.onReorderCallback -= OnListOrderChanged;
-            _reorderableList.drawHeaderCallback -= OnDrawerHeader;
+            reorderableList.drawElementCallback -= OnDrawAnimationStep;
+            reorderableList.drawElementBackgroundCallback -= OnDrawAnimationStepBackground;
+            reorderableList.elementHeightCallback -= GetAnimationStepHeight;
+            reorderableList.onAddDropdownCallback -= OnClickToAddNew;
+            reorderableList.onRemoveCallback -= OnClickToRemove;
+            reorderableList.onReorderCallback -= OnListOrderChanged;
+            reorderableList.drawHeaderCallback -= OnDrawerHeader;
             EditorApplication.playModeStateChanged -= OnEditorPlayModeChanged;
             EditorApplication.update -= EditorUpdate;
 
@@ -96,12 +98,12 @@ namespace com.ktgame.animation_sequencer.editor
             {
                 if (DOTweenEditorPreview.isPreviewing)
                 {
-                    _sequencerController.ResetToInitialState();
+                    sequencerController.ResetToInitialState();
                     DOTweenEditorPreview.Stop();            
                 }
             }
             
-            _tweenTimeScale = 1f;
+            tweenTimeScale = 1f;
         }
 
         private void EditorUpdate()
@@ -109,7 +111,7 @@ namespace com.ktgame.animation_sequencer.editor
             if (Application.isPlaying)
                 return;
 
-            SerializedProperty progressSP = serializedObject.FindProperty("_progress");
+            SerializedProperty progressSP = serializedObject.FindProperty("progress");
             if (progressSP == null || Mathf.Approximately(progressSP.floatValue, -1))
                 return;
             
@@ -122,7 +124,7 @@ namespace com.ktgame.animation_sequencer.editor
             {
                 if (DOTweenEditorPreview.isPreviewing)
                 {
-                    _sequencerController.ResetToInitialState();
+                    sequencerController.ResetToInitialState();
                     DOTweenEditorPreview.Stop();            
                 }
             }
@@ -132,7 +134,7 @@ namespace com.ktgame.animation_sequencer.editor
         {
             if (DOTweenEditorPreview.isPreviewing)
             {
-                _sequencerController.ResetToInitialState();
+                sequencerController.ResetToInitialState();
                 DOTweenEditorPreview.Stop();            
             }
         }
@@ -144,7 +146,7 @@ namespace com.ktgame.animation_sequencer.editor
         
         private void AddNewAnimationStepOfType(Type targetAnimationType)
         {
-            SerializedProperty animationStepsProperty = _reorderableList.serializedProperty;
+            SerializedProperty animationStepsProperty = reorderableList.serializedProperty;
             int targetIndex = animationStepsProperty.arraySize;
             animationStepsProperty.InsertArrayElementAtIndex(targetIndex);
             SerializedProperty arrayElementAtIndex = animationStepsProperty.GetArrayElementAtIndex(targetIndex);
@@ -152,7 +154,7 @@ namespace com.ktgame.animation_sequencer.editor
             arrayElementAtIndex.managedReferenceValue = managedReferenceValue;
         
             //TODO copy from last step would be better here.
-            SerializedProperty targetSerializedProperty = arrayElementAtIndex.FindPropertyRelative("_target");
+            SerializedProperty targetSerializedProperty = arrayElementAtIndex.FindPropertyRelative("target");
             if (targetSerializedProperty != null)
                 targetSerializedProperty.objectReferenceValue = (serializedObject.targetObject as AnimationSequencerController)?.gameObject;
             
@@ -161,10 +163,10 @@ namespace com.ktgame.animation_sequencer.editor
         
         private void OnClickToRemove(ReorderableList list)
         {
-            SerializedProperty element = _reorderableList.serializedProperty.GetArrayElementAtIndex(list.index);
+            SerializedProperty element = reorderableList.serializedProperty.GetArrayElementAtIndex(list.index);
             SerializedPropertyExtensions.ClearPropertyCache(element.propertyPath);
-            _reorderableList.serializedProperty.DeleteArrayElementAtIndex(list.index);
-            _reorderableList.serializedProperty.serializedObject.ApplyModifiedProperties();
+            reorderableList.serializedProperty.DeleteArrayElementAtIndex(list.index);
+            reorderableList.serializedProperty.serializedObject.ApplyModifiedProperties();
         }
         
         private void OnListOrderChanged(ReorderableList list)
@@ -185,24 +187,22 @@ namespace com.ktgame.animation_sequencer.editor
 
         public override void OnInspectorGUI()
         {
-            if (_sequencerController.IsResetRequired())
+            if (sequencerController.IsResetRequired())
             {
                 SetDefaults();
             }
 
-            DrawFoldoutArea("Settings", ref _showSettingsPanel, DrawSettings, DrawSettingsHeader);
-            DrawFoldoutArea("Callback", ref _showCallbacksPanel, DrawCallbacks);
-            DrawFoldoutArea("Preview", ref _showPreviewPanel, DrawPreviewControls);
-            DrawFoldoutArea("Steps", ref _showStepsPanel, DrawAnimationSteps, DrawAnimationStepsHeader, 50);
+            DrawFoldoutArea("Settings", ref showSettingsPanel, DrawSettings, DrawSettingsHeader);
+            DrawFoldoutArea("Callback", ref showCallbacksPanel, DrawCallbacks);
+            DrawFoldoutArea("Preview", ref showPreviewPanel, DrawPreviewControls);
+            DrawFoldoutArea("Steps", ref showStepsPanel, DrawAnimationSteps, DrawAnimationStepsHeader, 50);
         }
 
         private void DrawAnimationStepsHeader(Rect rect, bool foldout)
         {
             if (!foldout)
-            {
                 return;
-            }
-
+            
             var collapseAllRect = new Rect(rect)
             {
                 xMin = rect.xMax - 50,
@@ -230,11 +230,9 @@ namespace com.ktgame.animation_sequencer.editor
         {
             bool wasGUIEnabled = GUI.enabled;
             if (DOTweenEditorPreview.isPreviewing)
-            {
                 GUI.enabled = false;
-            }
 
-            _reorderableList.DoLayoutList();
+            reorderableList.DoLayoutList();
                         
             GUI.enabled = wasGUIEnabled;
         }
@@ -244,9 +242,9 @@ namespace com.ktgame.animation_sequencer.editor
             bool wasGUIEnabled = GUI.enabled;
             if (DOTweenEditorPreview.isPreviewing)
                 GUI.enabled = false;
-            SerializedProperty onStartEventSerializedProperty = serializedObject.FindProperty("_onStartEvent");
-            SerializedProperty onFinishedEventSerializedProperty = serializedObject.FindProperty("_onFinishedEvent");
-            SerializedProperty onProgressEventSerializedProperty = serializedObject.FindProperty("_onProgressEvent");
+            SerializedProperty onStartEventSerializedProperty = serializedObject.FindProperty("onStartEvent");
+            SerializedProperty onFinishedEventSerializedProperty = serializedObject.FindProperty("onFinishedEvent");
+            SerializedProperty onProgressEventSerializedProperty = serializedObject.FindProperty("onProgressEvent");
 
             
             using (EditorGUI.ChangeCheckScope changedCheck = new EditorGUI.ChangeCheckScope())
@@ -264,8 +262,8 @@ namespace com.ktgame.animation_sequencer.editor
 
         private void DrawSettingsHeader(Rect rect, bool foldout)
         {
-            var autoPlayModeSerializedProperty = serializedObject.FindProperty("_autoplayMode");
-            var autoKillSerializedProperty = serializedObject.FindProperty("_autoKill");
+            var autoPlayModeSerializedProperty = serializedObject.FindProperty("autoplayMode");
+            var autoKillSerializedProperty = serializedObject.FindProperty("autoKill");
 
             var autoplayMode = (AnimationSequencerController.AutoplayType) autoPlayModeSerializedProperty.enumValueIndex;
             var autoKill = autoKillSerializedProperty.boolValue;
@@ -281,8 +279,8 @@ namespace com.ktgame.animation_sequencer.editor
 
         private void DrawSettings()
         {
-            SerializedProperty autoPlayModeSerializedProperty = serializedObject.FindProperty("_autoplayMode");
-            SerializedProperty pauseOnAwakeSerializedProperty = serializedObject.FindProperty("_startPaused");
+            SerializedProperty autoPlayModeSerializedProperty = serializedObject.FindProperty("autoplayMode");
+            SerializedProperty pauseOnAwakeSerializedProperty = serializedObject.FindProperty("startPaused");
 
             using (EditorGUI.ChangeCheckScope changedCheck = new EditorGUI.ChangeCheckScope())
             {
@@ -302,12 +300,12 @@ namespace com.ktgame.animation_sequencer.editor
             if (DOTweenEditorPreview.isPreviewing)
                 GUI.enabled = false;
             
-            SerializedProperty updateTypeSerializedProperty = serializedObject.FindProperty("_updateType");
-            SerializedProperty timeScaleIndependentSerializedProperty = serializedObject.FindProperty("_timeScaleIndependent");
-            SerializedProperty sequenceDirectionSerializedProperty = serializedObject.FindProperty("_playType");
-            SerializedProperty loopsSerializedProperty = serializedObject.FindProperty("_loops");
-            SerializedProperty loopTypeSerializedProperty = serializedObject.FindProperty("_loopType");
-            SerializedProperty autoKillSerializedProperty = serializedObject.FindProperty("_autoKill");
+            SerializedProperty updateTypeSerializedProperty = serializedObject.FindProperty("updateType");
+            SerializedProperty timeScaleIndependentSerializedProperty = serializedObject.FindProperty("timeScaleIndependent");
+            SerializedProperty sequenceDirectionSerializedProperty = serializedObject.FindProperty("playType");
+            SerializedProperty loopsSerializedProperty = serializedObject.FindProperty("loops");
+            SerializedProperty loopTypeSerializedProperty = serializedObject.FindProperty("loopType");
+            SerializedProperty autoKillSerializedProperty = serializedObject.FindProperty("autoKill");
 
             using (EditorGUI.ChangeCheckScope changedCheck = new EditorGUI.ChangeCheckScope())
             {
@@ -338,7 +336,7 @@ namespace com.ktgame.animation_sequencer.editor
             GUILayout.FlexibleSpace();
             EditorGUI.BeginChangeCheck();
             
-            var playbackSpeedProperty = serializedObject.FindProperty("_playbackSpeed");
+            var playbackSpeedProperty = serializedObject.FindProperty("playbackSpeed");
             playbackSpeedProperty.floatValue = EditorGUILayout.Slider("Playback Speed", playbackSpeedProperty.floatValue, 0, 2);
 
             if (EditorGUI.EndChangeCheck())
@@ -352,10 +350,10 @@ namespace com.ktgame.animation_sequencer.editor
         
         private void UpdateSequenceTimeScale()
         {
-            if (_sequencerController.PlayingSequence == null)
+            if (sequencerController.PlayingSequence == null)
                 return;
             
-            _sequencerController.PlayingSequence.timeScale = _sequencerController.PlaybackSpeed * _tweenTimeScale;
+            sequencerController.PlayingSequence.timeScale = sequencerController.PlaybackSpeed * tweenTimeScale;
         }
         
 
@@ -371,25 +369,25 @@ namespace com.ktgame.animation_sequencer.editor
             previewButtonStyle.fixedWidth = previewButtonStyle.fixedHeight = 40;
             if (GUILayout.Button(AnimationSequenceEditorGUIUtility.BackButtonGUIContent, previewButtonStyle))
             {
-                if (!_sequencerController.IsPlaying)
+                if (!sequencerController.IsPlaying)
                     PlaySequence();
 
-                _sequencerController.Rewind();
+                sequencerController.Rewind();
             }
 
             if (GUILayout.Button(AnimationSequenceEditorGUIUtility.StepBackGUIContent, previewButtonStyle))
             {
-                if(!_sequencerController.IsPlaying)
+                if(!sequencerController.IsPlaying)
                     PlaySequence();
 
                 StepBack();
             }
 
-            if (_sequencerController.IsPlaying)
+            if (sequencerController.IsPlaying)
             {
                 if (GUILayout.Button(AnimationSequenceEditorGUIUtility.PauseButtonGUIContent, previewButtonStyle))
                 {
-                    _sequencerController.Pause();
+                    sequencerController.Pause();
                 }
             }
             else
@@ -403,7 +401,7 @@ namespace com.ktgame.animation_sequencer.editor
             
             if (GUILayout.Button(AnimationSequenceEditorGUIUtility.StepNextGUIContent, previewButtonStyle))
             {
-                if(!_sequencerController.IsPlaying)
+                if(!sequencerController.IsPlaying)
                     PlaySequence();
 
                 StepNext();
@@ -411,10 +409,10 @@ namespace com.ktgame.animation_sequencer.editor
             
             if (GUILayout.Button(AnimationSequenceEditorGUIUtility.ForwardButtonGUIContent, previewButtonStyle))
             {
-                if (!_sequencerController.IsPlaying)
+                if (!sequencerController.IsPlaying)
                     PlaySequence();
 
-                _sequencerController.Complete();
+                sequencerController.Complete();
             }
 
             if (!Application.isPlaying)
@@ -422,13 +420,13 @@ namespace com.ktgame.animation_sequencer.editor
                 GUI.enabled = DOTweenEditorPreview.isPreviewing;
                 if (GUILayout.Button(AnimationSequenceEditorGUIUtility.StopButtonGUIContent, previewButtonStyle))
                 {
-                    _sequencerController.Rewind();
-                    DOTween.Kill(_sequencerController.PlayingSequence);
+                    sequencerController.Rewind();
+                    DOTween.Kill(sequencerController.PlayingSequence);
                     DOTweenEditorPreview.Stop();
-                    _sequencerController.ResetToInitialState();
-                    _sequencerController.ClearPlayingSequence();
+                    sequencerController.ResetToInitialState();
+                    sequencerController.ClearPlayingSequence();
                     if (AnimationSequencerSettings.GetInstance().AutoHideStepsWhenPreviewing)
-                        _showStepsPanel = _wasShowingStepsPanel;
+                        showStepsPanel = wasShowingStepsPanel;
                 }
             }
 
@@ -441,85 +439,82 @@ namespace com.ktgame.animation_sequencer.editor
 
         private void StepBack()
         {
-            if (!_sequencerController.IsPlaying)
+            if (!sequencerController.IsPlaying)
                 PlaySequence();
             
-            _sequencerController.PlayingSequence.Goto((_sequencerController.PlayingSequence.ElapsedPercentage() -
-                                                      0.01f) * _sequencerController.PlayingSequence.Duration());
+            sequencerController.PlayingSequence.GotoWithCallbacks((sequencerController.PlayingSequence.ElapsedPercentage() -
+                                                                   0.01f) * sequencerController.PlayingSequence.Duration());
         }
 
         private void StepNext()
         {
-            if (!_sequencerController.IsPlaying)
+            if (!sequencerController.IsPlaying)
                 PlaySequence();
 
-            _sequencerController.PlayingSequence.Goto((_sequencerController.PlayingSequence.ElapsedPercentage() +
-                                                      0.01f) * _sequencerController.PlayingSequence.Duration());
+            sequencerController.PlayingSequence.GotoWithCallbacks((sequencerController.PlayingSequence.ElapsedPercentage() +
+                                                                   0.01f) * sequencerController.PlayingSequence.Duration());
         }
 
         private void PlaySequence()
         {
-            _justStartPreviewing = false;
+            justStartPreviewing = false;
             if (!Application.isPlaying)
             {
                 if (!DOTweenEditorPreview.isPreviewing)
                 {
-                    _justStartPreviewing = true;
+                    justStartPreviewing = true;
                     DOTweenEditorPreview.Start();
 
-                    _sequencerController.Play();
+                    sequencerController.Play();
                     
-                    DOTweenEditorPreview.PrepareTweenForPreview(_sequencerController.PlayingSequence);
+                    DOTweenEditorPreview.PrepareTweenForPreview(sequencerController.PlayingSequence);
 
                     if (AnimationSequencerSettings.GetInstance().DrawTimingsWhenPreviewing)
-                    {
-                        _previewingTimings = DOTweenProxy.GetTimings(_sequencerController.PlayingSequence, _sequencerController.AnimationSteps);
-                    }
+                        previewingTimings = DOTweenProxy.GetTimings(sequencerController.PlayingSequence,
+                            sequencerController.AnimationSteps);
                     else
-                    {
-                        _previewingTimings = null;
-                    }
+                        previewingTimings = null;
                 }
                 else
                 {
-                    if (_sequencerController.PlayingSequence == null)
+                    if (sequencerController.PlayingSequence == null)
                     {
-                        _sequencerController.Play();
+                        sequencerController.Play();
                     }
                     else
                     {
-                        if (!_sequencerController.PlayingSequence.IsBackwards() &&
-                            _sequencerController.PlayingSequence.fullPosition >= _sequencerController.PlayingSequence.Duration())
+                        if (!sequencerController.PlayingSequence.IsBackwards() &&
+                            sequencerController.PlayingSequence.fullPosition >= sequencerController.PlayingSequence.Duration())
                         {
-                            _sequencerController.Rewind();
+                            sequencerController.Rewind();
                         }
-                        else if (_sequencerController.PlayingSequence.IsBackwards() &&
-                                 _sequencerController.PlayingSequence.fullPosition <= 0f)
+                        else if (sequencerController.PlayingSequence.IsBackwards() &&
+                                 sequencerController.PlayingSequence.fullPosition <= 0f)
                         {
-                            _sequencerController.Complete();
+                            sequencerController.Complete();
                         }
 
-                        _sequencerController.TogglePause();
+                        sequencerController.TogglePause();
                     }
                 }
             }
             else
             {
-                if (_sequencerController.PlayingSequence == null)
-                    _sequencerController.Play();
+                if (sequencerController.PlayingSequence == null)
+                    sequencerController.Play();
                 else
                 {
-                    if (_sequencerController.PlayingSequence.IsActive())
-                        _sequencerController.TogglePause();
+                    if (sequencerController.PlayingSequence.IsActive())
+                        sequencerController.TogglePause();
                     else
-                        _sequencerController.Play();
+                        sequencerController.Play();
                 }
             }
 
-            if (_justStartPreviewing)
-                _wasShowingStepsPanel = _showStepsPanel;
+            if (justStartPreviewing)
+                wasShowingStepsPanel = showStepsPanel;
             
-            _showStepsPanel = !AnimationSequencerSettings.GetInstance().AutoHideStepsWhenPreviewing;
+            showStepsPanel = !AnimationSequencerSettings.GetInstance().AutoHideStepsWhenPreviewing;
         }
 
         private void DrawProgressSlider()
@@ -542,7 +537,7 @@ namespace com.ktgame.animation_sequencer.editor
 
                 if (!Application.isPlaying)
                 {
-                    serializedObject.FindProperty("_progress").floatValue = tweenProgress;
+                    serializedObject.FindProperty("progress").floatValue = tweenProgress;
                     serializedObject.ApplyModifiedProperties();
                 }
             }
@@ -552,33 +547,27 @@ namespace com.ktgame.animation_sequencer.editor
 
         private void SetProgress(float tweenProgress)
         {
-            if (!_sequencerController.IsPlaying)
-            {
+            if (!sequencerController.IsPlaying)
                 PlaySequence();
-            }
 
-            _sequencerController.PlayingSequence.Goto(tweenProgress * _sequencerController.PlayingSequence.Duration());
+            sequencerController.PlayingSequence.GotoWithCallbacks(tweenProgress *
+                                                     sequencerController.PlayingSequence.Duration());
         }
 
         private float GetCurrentSequencerProgress()
         {
             float tweenProgress;
-            if (_sequencerController.PlayingSequence != null && _sequencerController.PlayingSequence.IsActive())
-            {
-                tweenProgress = _sequencerController.PlayingSequence.ElapsedPercentage();
-            }
+            if (sequencerController.PlayingSequence != null && sequencerController.PlayingSequence.IsActive())
+                tweenProgress = sequencerController.PlayingSequence.ElapsedPercentage();
             else
-            {
                 tweenProgress = 0;
-            }
-
             return tweenProgress;
         }
 
         private void SetCurrentSequenceProgress(float progress)
         {
-            _sequencerController.PlayingSequence.Goto(progress *
-                                                     _sequencerController.PlayingSequence.Duration());
+            sequencerController.PlayingSequence.GotoWithCallbacks(progress *
+                                                     sequencerController.PlayingSequence.Duration());
         }
 
         private void DrawTimeScaleSlider()
@@ -588,7 +577,7 @@ namespace com.ktgame.animation_sequencer.editor
             
             var oldLabelWidth = EditorGUIUtility.labelWidth;
             EditorGUIUtility.labelWidth = 65;
-            _tweenTimeScale = EditorGUILayout.Slider("TimeScale", _tweenTimeScale, 0, 2);
+            tweenTimeScale = EditorGUILayout.Slider("TimeScale", tweenTimeScale, 0, 2);
             EditorGUIUtility.labelWidth = oldLabelWidth;
 			
             UpdateSequenceTimeScale();
@@ -653,10 +642,10 @@ namespace com.ktgame.animation_sequencer.editor
 
             if (Event.current.type == EventType.Repaint &&
                 DOTweenEditorPreview.isPreviewing &&
-                _previewingTimings != null &&
-                index >= 0 && index < _previewingTimings.Length)
+                previewingTimings != null &&
+                index >= 0 && index < previewingTimings.Length)
             {
-                var (start, end) = _previewingTimings[index];
+                var (start, end) = previewingTimings[index];
 
                 var progress = GetCurrentSequencerProgress();
 
@@ -688,8 +677,8 @@ namespace com.ktgame.animation_sequencer.editor
 
         private void OnDrawAnimationStep(Rect rect, int index, bool isActive, bool isFocused)
         {
-            SerializedProperty element = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
-            SerializedProperty flowTypeSerializedProperty = element.FindPropertyRelative("_flowType");
+            SerializedProperty element = reorderableList.serializedProperty.GetArrayElementAtIndex(index);
+            SerializedProperty flowTypeSerializedProperty = element.FindPropertyRelative("flowType");
 
             if (!element.TryGetTargetObjectOfProperty(out AnimationStepBase animationStepBase))
                 return;
@@ -722,16 +711,16 @@ namespace com.ktgame.animation_sequencer.editor
 
         private float GetAnimationStepHeight(int index)
         {
-            if (index > _reorderableList.serializedProperty.arraySize - 1)
+            if (index > reorderableList.serializedProperty.arraySize - 1)
                 return EditorGUIUtility.singleLineHeight;
             
-            SerializedProperty element = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
+            SerializedProperty element = reorderableList.serializedProperty.GetArrayElementAtIndex(index);
             return element.GetPropertyDrawerHeight();
         }
 
         private void SetStepsExpanded(bool expanded)
         {
-            SerializedProperty animationStepsProperty = _reorderableList.serializedProperty;
+            SerializedProperty animationStepsProperty = reorderableList.serializedProperty;
             for (int i = 0; i < animationStepsProperty.arraySize; i++)
             {
                 animationStepsProperty.GetArrayElementAtIndex(i).isExpanded = expanded;
@@ -740,18 +729,18 @@ namespace com.ktgame.animation_sequencer.editor
 
         private void SetDefaults()
         {
-            _sequencerController = target as AnimationSequencerController;
-            if (_sequencerController != null)
+            sequencerController = target as AnimationSequencerController;
+            if (sequencerController != null)
             {
-                _sequencerController.SetAutoplayMode(AnimationControllerDefaults.Instance.AutoplayMode);
-                _sequencerController.SetPlayOnAwake(AnimationControllerDefaults.Instance.PlayOnAwake);
-                _sequencerController.SetPauseOnAwake(AnimationControllerDefaults.Instance.PauseOnAwake);
-                _sequencerController.SetTimeScaleIndependent(AnimationControllerDefaults.Instance.TimeScaleIndependent);
-                _sequencerController.SetPlayType(AnimationControllerDefaults.Instance.PlayType);
-                _sequencerController.SetUpdateType(AnimationControllerDefaults.Instance.UpdateType);
-                _sequencerController.SetAutoKill(AnimationControllerDefaults.Instance.AutoKill);
-                _sequencerController.SetLoops(AnimationControllerDefaults.Instance.Loops);
-                _sequencerController.ResetComplete();
+                sequencerController.SetAutoplayMode(AnimationControllerDefaults.Instance.AutoplayMode);
+                sequencerController.SetPlayOnAwake(AnimationControllerDefaults.Instance.PlayOnAwake);
+                sequencerController.SetPauseOnAwake(AnimationControllerDefaults.Instance.PauseOnAwake);
+                sequencerController.SetTimeScaleIndependent(AnimationControllerDefaults.Instance.TimeScaleIndependent);
+                sequencerController.SetPlayType(AnimationControllerDefaults.Instance.PlayType);
+                sequencerController.SetUpdateType(AnimationControllerDefaults.Instance.UpdateType);
+                sequencerController.SetAutoKill(AnimationControllerDefaults.Instance.AutoKill);
+                sequencerController.SetLoops(AnimationControllerDefaults.Instance.Loops);
+                sequencerController.ResetComplete();
             }
         }
 
@@ -779,3 +768,4 @@ namespace com.ktgame.animation_sequencer.editor
         }
     }
 }
+#endif

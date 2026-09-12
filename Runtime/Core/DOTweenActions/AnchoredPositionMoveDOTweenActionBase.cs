@@ -1,58 +1,58 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using DG.Tweening;
 using DG.Tweening.Core;
 using DG.Tweening.Plugins.Options;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer
+namespace BrunoMikoski.AnimationSequencer
 {
-	[Serializable]
-	public abstract class AnchoredPositionMoveDOTweenActionBase : DOTweenActionBase
-	{
-		public override Type TargetComponentType => typeof(RectTransform);
+    [Serializable]
+    public abstract class AnchoredPositionMoveDOTweenActionBase : DOTweenActionBase
+    {
+        public override Type TargetComponentType => typeof(RectTransform);
 
-		[SerializeField]
-		private AxisConstraint axisConstraint;
-		public AxisConstraint AxisConstraint
-		{
-			get => axisConstraint;
-			set => axisConstraint = value;
-		}
+        [SerializeField]
+        private AxisConstraint axisConstraint;
+        public AxisConstraint AxisConstraint
+        {
+            get => axisConstraint;
+            set => axisConstraint = value;
+        }
 
-		private RectTransform rectTransform;
-		private Vector2 previousAnchorPosition;
+        private RectTransform rectTransform;
+        private Vector2 previousAnchorPosition;
 
-		protected override Tweener GenerateTween_Internal(GameObject target, float duration)
-		{
-			if (rectTransform == null)
-			{
-				rectTransform = target.transform as RectTransform;
+        protected override Tweener GenerateTween_Internal(GameObject target, float duration)
+        {
+            if (rectTransform == null)
+            {
+                rectTransform = target.transform as RectTransform;
 
-				if (rectTransform == null)
-				{
-					Debug.LogError($"{target} does not have {TargetComponentType} component");
-					return null;
-				}
-			}
+                if (rectTransform == null)
+                {
+                    Debug.LogError($"{target} does not have {TargetComponentType} component");
+                    return null;
+                }
+            }
 
-			previousAnchorPosition = rectTransform.anchoredPosition;
-			TweenerCore<Vector2, Vector2, VectorOptions> anchorPosTween = rectTransform.DOAnchorPos(GetPosition(), duration);
+            previousAnchorPosition = rectTransform.anchoredPosition;
+            TweenerCore<Vector2, Vector2, VectorOptions> anchorPosTween = rectTransform.DOAnchorPos(GetPosition(), duration);
 
-			anchorPosTween.SetOptions(axisConstraint);
+            anchorPosTween.SetOptions(axisConstraint);
 
-			return anchorPosTween;
-		}
+            return anchorPosTween;
+        }
 
-		protected abstract Vector2 GetPosition();
+        protected abstract Vector2 GetPosition();
 
-		public override void ResetToInitialState()
-		{
-			if (rectTransform == null)
-			{
-				return;
-			}
+        public override void ResetToInitialState()
+        {
+            if (rectTransform == null)
+                return;
 
-			rectTransform.anchoredPosition = previousAnchorPosition;
-		}
-	}
+            rectTransform.anchoredPosition = previousAnchorPosition;
+        }
+    }
 }
+#endif

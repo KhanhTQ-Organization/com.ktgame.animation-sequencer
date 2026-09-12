@@ -1,8 +1,8 @@
 {
     "name": "com.ktgame.animation-sequencer.editor",
-    "rootNamespace": "com.ktgame.animation_sequencer.editor",
+    "rootNamespace": "",
     "references": [
-        "GUID:7988ced1f9eae754c951c4a39eb5d789"
+        "com.ktgame.animation-sequencer"
     ],
     "includePlatforms": [
         "Editor"

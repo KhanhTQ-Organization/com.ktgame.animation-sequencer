@@ -1,35 +1,45 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using DG.Tweening;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer
+namespace BrunoMikoski.AnimationSequencer
 {
     [Serializable]
     public sealed class SetTargetRectTransformPropertiesStep : AnimationStepBase
     {
         public override string DisplayName => "Set Target RectTransform Properties";
+        [SerializeField]
+        private RectTransform targetRectTransform;
         
-        [SerializeField] private RectTransform _targetRectTransform;
-        
-        [SerializeField] private bool _useLocal;
-        [SerializeField] private Vector3 _position;
-        [SerializeField] private Vector3 _eulerAngles;
-        [SerializeField] private Vector3 _scale = Vector3.one;
+        [SerializeField]
+        private bool useLocal;
+        [SerializeField]
+        private Vector3 position;
+        [SerializeField] 
+        private Vector3 eulerAngles;
+        [SerializeField] 
+        private Vector3 scale = Vector3.one;
 
-        [SerializeField] private Vector2 _anchorMin =  new Vector2(0.5f, 0.5f);
-        [SerializeField] private Vector2 _anchorMax =  new Vector2(0.5f, 0.5f);
-        [SerializeField] private Vector2 _anchoredPosition;
-        [SerializeField] private Vector2 _sizeDelta;
-        [SerializeField] private Vector2 _pivot = new Vector2(0.5f, 0.5f);
+        [SerializeField] 
+        private Vector2 anchorMin =  new Vector2(0.5f, 0.5f);
+        [SerializeField] 
+        private Vector2 anchorMax =  new Vector2(0.5f, 0.5f);
+        [SerializeField] 
+        private Vector2 anchoredPosition;
+        [SerializeField] 
+        private Vector2 sizeDelta;
+        [SerializeField] 
+        private Vector2 pivot = new Vector2(0.5f, 0.5f);
 
-        private Vector3 _originalPosition;
-        private Vector3 _originalEulerAngles;
-        private Vector3 _originalScale;
-        private Vector2 _originalAnchorMin;
-        private Vector2 _originalAnchorMax;
-        private Vector2 _originalAnchoredPosition;
-        private Vector2 _originalSizeDelta;
-        private Vector2 _originalPivot;
+        private Vector3 originalPosition;
+        private Vector3 originalEulerAngles;
+        private Vector3 originalScale;
+        private Vector2 originalAnchorMin;
+        private Vector2 originalAnchorMax;
+        private Vector2 originalAnchoredPosition;
+        private Vector2 originalSizeDelta;
+        private Vector2 originalPivot;
         
         public override void AddTweenToSequence(Sequence animationSequence)
         {
@@ -38,81 +48,76 @@ namespace com.ktgame.animation_sequencer
 
             behaviourSequence.AppendCallback(() =>
             {
-                if (_useLocal)
+                if (useLocal)
                 {
-                    _originalPosition = _targetRectTransform.localPosition;
-                    _originalEulerAngles = _targetRectTransform.localEulerAngles;
+                    originalPosition = targetRectTransform.localPosition;
+                    originalEulerAngles = targetRectTransform.localEulerAngles;
                     
-                    _targetRectTransform.localPosition = _position;
-                    _targetRectTransform.localEulerAngles = _eulerAngles;
+                    targetRectTransform.localPosition = position;
+                    targetRectTransform.localEulerAngles = eulerAngles;
                 }
                 else
                 {
-                    _originalPosition = _targetRectTransform.position;
-                    _originalEulerAngles = _targetRectTransform.eulerAngles;
+                    originalPosition = targetRectTransform.position;
+                    originalEulerAngles = targetRectTransform.eulerAngles;
                     
-                    _targetRectTransform.position = _position;
-                    _targetRectTransform.eulerAngles = _eulerAngles;
+                    targetRectTransform.position = position;
+                    targetRectTransform.eulerAngles = eulerAngles;
                 }
 
 
-                _targetRectTransform.anchorMin = _anchorMin;
-                _targetRectTransform.anchorMax = _anchorMax;
-                _targetRectTransform.anchoredPosition = _anchoredPosition;
-                _targetRectTransform.sizeDelta = _sizeDelta;
-                _targetRectTransform.pivot = _pivot;
+                targetRectTransform.anchorMin = anchorMin;
+                targetRectTransform.anchorMax = anchorMax;
+                targetRectTransform.anchoredPosition = anchoredPosition;
+                targetRectTransform.sizeDelta = sizeDelta;
+                targetRectTransform.pivot = pivot;
                 
                 
-                _originalAnchorMin = _targetRectTransform.anchorMin;
-                _originalAnchorMax = _targetRectTransform.anchorMax;
-                _originalAnchoredPosition = _targetRectTransform.anchoredPosition;
-                _originalSizeDelta = _targetRectTransform.sizeDelta;
-                _originalPivot = _targetRectTransform.pivot;
+                originalAnchorMin = targetRectTransform.anchorMin;
+                originalAnchorMax = targetRectTransform.anchorMax;
+                originalAnchoredPosition = targetRectTransform.anchoredPosition;
+                originalSizeDelta = targetRectTransform.sizeDelta;
+                originalPivot = targetRectTransform.pivot;
                 
-                _originalScale = _targetRectTransform.localScale; 
-                _targetRectTransform.localScale = _scale;
+                originalScale = targetRectTransform.localScale; 
+                targetRectTransform.localScale = scale;
             });
             if (FlowType == FlowType.Join)
-            {
                 animationSequence.Join(behaviourSequence);
-            }
             else
-            {
                 animationSequence.Append(behaviourSequence);
-            }
         }
 
         public override void ResetToInitialState()
         {
-            if (_useLocal)
+            if (useLocal)
             {
-                _targetRectTransform.localPosition = _originalPosition;
-                _targetRectTransform.localEulerAngles = _originalEulerAngles;
+                targetRectTransform.localPosition = originalPosition;
+                targetRectTransform.localEulerAngles = originalEulerAngles;
             }
             else
             {
-                _targetRectTransform.position = _originalPosition;
-                _targetRectTransform.eulerAngles = _originalEulerAngles;
+                targetRectTransform.position = originalPosition;
+                targetRectTransform.eulerAngles = originalEulerAngles;
             }
-            _targetRectTransform.localScale = _originalScale;
+            targetRectTransform.localScale = originalScale;
             
-            _targetRectTransform.anchorMin = _originalAnchorMin;
-            _targetRectTransform.anchorMax = _originalAnchorMax;
-            _targetRectTransform.anchoredPosition = _originalAnchoredPosition;
-            _targetRectTransform.sizeDelta = _originalSizeDelta;
-            _targetRectTransform.pivot = _originalPivot;
+            targetRectTransform.anchorMin = originalAnchorMin;
+            targetRectTransform.anchorMax = originalAnchorMax;
+            targetRectTransform.anchoredPosition = originalAnchoredPosition;
+            targetRectTransform.sizeDelta = originalSizeDelta;
+            targetRectTransform.pivot = originalPivot;
         }
         
         public override string GetDisplayNameForEditor(int index)
         {
             string display = "NULL";
-            if (_targetRectTransform != null)
-            {
-                display = _targetRectTransform.name;
-            }
-
+            if (targetRectTransform != null)
+                display = targetRectTransform.name;
+            
             return $"{index}. Set {display}(RectTransform) Properties";
         }  
 
     }
 }
+#endif

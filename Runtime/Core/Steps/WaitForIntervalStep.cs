@@ -1,45 +1,43 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using DG.Tweening;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer
+namespace BrunoMikoski.AnimationSequencer
 {
-	[Serializable]
-	public sealed class WaitForIntervalStep : AnimationStepBase
-	{
-		public override string DisplayName => "Wait for Interval";
+    [Serializable]
+    public sealed class WaitForIntervalStep : AnimationStepBase
+    {
+        public override string DisplayName => "Wait for Interval";
 
-		[SerializeField] private float _interval;
-		public float Interval
-		{
-			get => _interval;
-			set => _interval = value;
-		}
+        [SerializeField]
+        private float interval;
+        public float Interval
+        {
+            get => interval;
+            set => interval = value;
+        }
 
-		public override void AddTweenToSequence(Sequence animationSequence)
-		{
-			Sequence sequence = DOTween.Sequence();
-			sequence.SetDelay(Delay);
+        public override void AddTweenToSequence(Sequence animationSequence)
+        {
+            Sequence sequence = DOTween.Sequence();
+            sequence.SetDelay(Delay);
 
-			sequence.AppendInterval(_interval);
+            sequence.AppendInterval(interval);
             
-			if (FlowType == FlowType.Join)
-			{
-				animationSequence.Join(sequence);
-			}
-			else
-			{
-				animationSequence.Append(sequence);
-			}
-		}
+            if (FlowType == FlowType.Join)
+                animationSequence.Join(sequence);
+            else
+                animationSequence.Append(sequence);        }
 
-		public override void ResetToInitialState()
-		{
-		}
+        public override void ResetToInitialState()
+        {
+        }
 
-		public override string GetDisplayNameForEditor(int index)
-		{
-			return $"{index}. Wait {_interval} seconds";
-		}
-	}
+        public override string GetDisplayNameForEditor(int index)
+        {
+            return $"{index}. Wait {interval} seconds";
+        }
+    }
 }
+#endif

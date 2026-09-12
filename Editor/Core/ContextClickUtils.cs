@@ -1,37 +1,34 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer.editor
+namespace BrunoMikoski.AnimationSequencer
 {
     public static class ContextClickUtils
     {
-        private static object _source;
+        private static object source;
 
         public static void SetSource(object targetSource)
         {
-            _source = targetSource;
+            source = targetSource;
         }
 
         public static bool CanPasteToTarget(object target)
         {
-            if (_source == null)
-			{
-				return false;
-			}
+            if (source == null)
+                return false;
 
-			return target.GetType() == _source.GetType();
+            return target.GetType() == source.GetType();
         }
         
         public static void ApplySourceToTarget(object target)
         {
-            if (_source == null)
-			{
-				return;
-			}
+            if (source == null)
+                return;
 
-			EditorUtility.CopySerializedManagedFieldsOnly(_source, target);
+            EditorUtility.CopySerializedManagedFieldsOnly(source, target);
         }
         
         public static void CopyPropertyValue(SerializedProperty source, SerializedProperty dest)
@@ -131,10 +128,7 @@ namespace com.ktgame.animation_sequencer.editor
 		static public object GetPropertyValue(SerializedProperty prop)
 		{
 			if (prop == null)
-			{
 				return null;
-			}
-
 			switch (prop.propertyType)
 			{
 				case SerializedPropertyType.Integer:

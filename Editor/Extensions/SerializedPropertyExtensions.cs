@@ -1,33 +1,29 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 
-namespace com.ktgame.animation_sequencer.editor
+namespace BrunoMikoski.AnimationSequencer
 {
     public static class SerializedPropertyExtensions
     {
-        private static Dictionary<string, float> _propertyPathToHeight = new Dictionary<string, float>();
-        private static Dictionary<string, Type> _managedReferenceFullTypeNameToTypeCache = new Dictionary<string, Type>();
+        private static Dictionary<string, float> propertyPathToHeight = new Dictionary<string, float>();
+        private static Dictionary<string, Type> managedReferenceFullTypeNameToTypeCache = new Dictionary<string, Type>();
 
-        private static Dictionary<string, object> _propertyPathToObjectCache = new Dictionary<string, object>();
+        private static Dictionary<string, object> propertyPathToObjectCache = new Dictionary<string, object>();
         
         public static Type GetTypeFromManagedFullTypeName(this SerializedProperty serializedProperty)
         {
             if (string.IsNullOrEmpty(serializedProperty.managedReferenceFullTypename))
-            {
                 throw new Exception($"Serialized Property doesnt have managedReferenceFullTypename");
-            }
-
-            if (_managedReferenceFullTypeNameToTypeCache.TryGetValue(serializedProperty.managedReferenceFullTypename, out Type type))
-            {
+            
+            if (managedReferenceFullTypeNameToTypeCache.TryGetValue(serializedProperty.managedReferenceFullTypename, out Type type))
                 return type;
-            }
-
+            
             string[] typeInfo = serializedProperty.managedReferenceFullTypename.Split(' ');
             type = Type.GetType($"{typeInfo[1]}, {typeInfo[0]}");
-            _managedReferenceFullTypeNameToTypeCache.Add(serializedProperty.managedReferenceFullTypename, type);
+            managedReferenceFullTypeNameToTypeCache.Add(serializedProperty.managedReferenceFullTypename, type);
 
             return type;
         }
@@ -39,7 +35,7 @@ namespace com.ktgame.animation_sequencer.editor
         
         public static float GetPropertyDrawerHeight(string propertyPath, float defaultHeight = 18)
         {
-            if (_propertyPathToHeight.TryGetValue(propertyPath, out float result))
+            if (propertyPathToHeight.TryGetValue(propertyPath, out float result))
                 return result;
 
             result = defaultHeight;
@@ -53,19 +49,19 @@ namespace com.ktgame.animation_sequencer.editor
 
         public static void SetPropertyDrawerHeight(string propertyPath, float height)
         {
-            _propertyPathToHeight[propertyPath] = height;
+            propertyPathToHeight[propertyPath] = height;
         }
 
         public static void ClearPropertyCache(string pathOrPartOfPath = "")
         {
             if (string.IsNullOrEmpty(pathOrPartOfPath))
             {
-                _propertyPathToObjectCache.Clear();
+                propertyPathToObjectCache.Clear();
                 return;
             }
             
             List<string> propertiesTobeRemoved = new List<string>();
-            foreach (KeyValuePair<string,object> keyValuePair in _propertyPathToObjectCache)
+            foreach (KeyValuePair<string,object> keyValuePair in propertyPathToObjectCache)
             {
                 string key = keyValuePair.Key;
                 if (key.IndexOf(pathOrPartOfPath, StringComparison.Ordinal) == -1)
@@ -75,20 +71,16 @@ namespace com.ktgame.animation_sequencer.editor
             }
 
             for (int i = 0; i < propertiesTobeRemoved.Count; i++)
-            {
-                _propertyPathToObjectCache.Remove(propertiesTobeRemoved[i]);
-            }
+                propertyPathToObjectCache.Remove(propertiesTobeRemoved[i]);
         }
         
         public static bool TryGetTargetObjectOfProperty<T>(this SerializedProperty prop, out T resultObject) where T : class
         {
             resultObject = null;
-            if (prop == null)
-            {
+            if (prop == null) 
                 return false;
-            }
 
-            // if (_propertyPathToObjectCache.TryGetValue(prop.propertyPath, out object result))
+            // if (propertyPathToObjectCache.TryGetValue(prop.propertyPath, out object result))
             // {
             //     if (result != null)
             //     {
@@ -96,7 +88,7 @@ namespace com.ktgame.animation_sequencer.editor
             //         return true;
             //     }
             //
-            //     _propertyPathToObjectCache.Remove(prop.propertyPath);
+            //     propertyPathToObjectCache.Remove(prop.propertyPath);
             // }
             
             string path = prop.propertyPath.Replace(".Array.data[", "[");
@@ -120,7 +112,7 @@ namespace com.ktgame.animation_sequencer.editor
             if (obj is T t)
             {
                 resultObject = t;
-                // _propertyPathToObjectCache.Add(prop.propertyPath, resultObject);
+                // propertyPathToObjectCache.Add(prop.propertyPath, resultObject);
                 return true;
             }
 
@@ -137,15 +129,11 @@ namespace com.ktgame.animation_sequencer.editor
             {
                 FieldInfo f = type.GetField(name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
                 if (f != null)
-                {
                     return f.GetValue(source);
-                }
 
                 PropertyInfo p = type.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
                 if (p != null)
-                {
                     return p.GetValue(source, null);
-                }
 
                 type = type.BaseType;
             }

@@ -1,28 +1,32 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer
+namespace BrunoMikoski.AnimationSequencer
 {
-	[Serializable]
-	public abstract class GameObjectAnimationStep : AnimationStepBase
-	{
-		[SerializeField] protected GameObject _target;
-		public GameObject Target
-		{
-			get => _target;
-			set => _target = value;
-		}
+    [Serializable]
+    public abstract class GameObjectAnimationStep : AnimationStepBase
+    {
+        [SerializeField]
+        protected GameObject target;
+        public GameObject Target
+        {
+            get => target;
+            set => target = value;
+        }
 
-		[SerializeField] protected float _duration = 1;
-		public float Duration
-		{
-			get => _duration;
-			set => _duration = value;
-		}
+        [SerializeField]
+        protected float duration = 1;
+        public float Duration
+        {
+            get => duration;
+            set => duration = value;
+        }
 
-		public void SetTarget(GameObject newTarget)
-		{
-			_target = newTarget;
-		}
-	}
+        public void SetTarget(GameObject newTarget)
+        {
+            target = newTarget;
+        }
+    }
 }
+#endif

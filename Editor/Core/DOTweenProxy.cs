@@ -1,3 +1,4 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -6,7 +7,7 @@ using DG.Tweening.Core;
 using UnityEditor;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer.editor
+namespace BrunoMikoski.AnimationSequencer
 {
     internal static class DOTweenProxy
     {
@@ -90,3 +91,4 @@ namespace com.ktgame.animation_sequencer.editor
         }
     }
 }
+#endif

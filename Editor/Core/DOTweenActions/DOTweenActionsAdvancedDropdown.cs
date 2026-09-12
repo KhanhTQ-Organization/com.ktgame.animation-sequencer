@@ -1,3 +1,4 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using System.Linq;
 using UnityEditor;
@@ -5,24 +6,24 @@ using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace com.ktgame.animation_sequencer.editor
+namespace BrunoMikoski.AnimationSequencer
 {
     public sealed class DOTweenActionAdvancedDropdownItem : AdvancedDropdownItem
     {
-        private Type _baseDOTweenActionType;
-        public Type BaseDOTweenActionType => _baseDOTweenActionType;
+        private Type baseDOTweenActionType;
+        public Type BaseDOTweenActionType => baseDOTweenActionType;
 
         public DOTweenActionAdvancedDropdownItem(Type baseDOTweenActionType, string displayName) : base(displayName)
         {
-            this._baseDOTweenActionType = baseDOTweenActionType;
+            this.baseDOTweenActionType = baseDOTweenActionType;
         }
     }
     
     public sealed class DOTweenActionsAdvancedDropdown : AdvancedDropdown
     {
-        private Action<DOTweenActionAdvancedDropdownItem> _callback;
-        private SerializedProperty _actionsList;
-        private GameObject _targetGameObject;
+        private Action<DOTweenActionAdvancedDropdownItem> callback;
+        private SerializedProperty actionsList;
+        private GameObject targetGameObject;
 
         public DOTweenActionsAdvancedDropdown(AdvancedDropdownState state) : base(state)
         {
@@ -59,7 +60,7 @@ namespace com.ktgame.animation_sequencer.editor
                 DOTweenActionAdvancedDropdownItem doTweenActionAdvancedDropdownItem = 
                     new DOTweenActionAdvancedDropdownItem(baseDOTweenActionType, typeToDisplayGUI.Value.text)
                 {
-                    enabled = !IsTypeAlreadyInUse(_actionsList, baseDOTweenActionType) && AnimationSequenceEditorGUIUtility.CanActionBeAppliedToTarget(baseDOTweenActionType, _targetGameObject)
+                    enabled = !IsTypeAlreadyInUse(actionsList, baseDOTweenActionType) && AnimationSequenceEditorGUIUtility.CanActionBeAppliedToTarget(baseDOTweenActionType, targetGameObject)
                 };
                 
                 if (typeToDisplayGUI.Value.image != null)
@@ -76,39 +77,32 @@ namespace com.ktgame.animation_sequencer.editor
         protected override void ItemSelected(AdvancedDropdownItem item)
         {
             base.ItemSelected(item);
-            _callback?.Invoke(item as DOTweenActionAdvancedDropdownItem);
+            callback?.Invoke(item as DOTweenActionAdvancedDropdownItem);
         }
 
         public void Show(Rect rect, SerializedProperty actionsListSerializedProperty, Object targetGameObject, Action<DOTweenActionAdvancedDropdownItem> 
         onActionSelectedCallback)
         {
-            _callback = onActionSelectedCallback;
-            this._actionsList = actionsListSerializedProperty;
+            callback = onActionSelectedCallback;
+            this.actionsList = actionsListSerializedProperty;
             if (targetGameObject is GameObject target)
-            {
-                this._targetGameObject = target;
-            }
-
+                this.targetGameObject = target;
             base.Show(rect);
         }
 
         private bool IsTypeAlreadyInUse(SerializedProperty actionsSerializedProperty, Type targetType)
         {
             if (string.IsNullOrEmpty(targetType.FullName))
-            {
                 return false;
-            }
-
-            for (var i = 0; i < actionsSerializedProperty.arraySize; i++)
+            for (int i = 0; i < actionsSerializedProperty.arraySize; i++)
             {
                 SerializedProperty actionElement = actionsSerializedProperty.GetArrayElementAtIndex(i);
                 if (actionElement.managedReferenceFullTypename.IndexOf(targetType.FullName, StringComparison.Ordinal) > -1)
-                {
                     return true;
-                }
             }
 
             return false;
         }
     }
 }
+#endif

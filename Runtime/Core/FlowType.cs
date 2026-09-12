@@ -1,8 +1,8 @@
-namespace com.ktgame.animation_sequencer
+﻿namespace BrunoMikoski.AnimationSequencer
 {
-	public enum FlowType 
-	{ 
-		Append, 
-		Join 
-	}
+    public enum FlowType 
+    { 
+        Append, 
+        Join 
+    }
 }

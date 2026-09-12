@@ -1,25 +1,27 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer
+namespace BrunoMikoski.AnimationSequencer
 {
-	[Serializable]
-	public sealed class AnchoredPositionMoveToPositionDOTweenActionBase : AnchoredPositionMoveDOTweenActionBase
-	{
-		[SerializeField]
-		private Vector2 position;
+    [Serializable]
+    public sealed class AnchoredPositionMoveToPositionDOTweenActionBase : AnchoredPositionMoveDOTweenActionBase
+    {
+        [SerializeField]
+        private Vector2 position;
 
-		public Vector2 Position
-		{
-			get => position;
-			set => position = value;
-		}
+        public Vector2 Position
+        {
+            get => position;
+            set => position = value;
+        }
 
-		public override string DisplayName => "Move To Anchored Position";
+        public override string DisplayName => "Move To Anchored Position";
 
-		protected override Vector2 GetPosition()
-		{
-			return position;
-		}
-	}
+        protected override Vector2 GetPosition()
+        {
+            return position;
+        }
+    }
 }
+#endif

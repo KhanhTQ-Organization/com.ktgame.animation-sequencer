@@ -1,52 +1,53 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer.editor
+namespace BrunoMikoski.AnimationSequencer
 {
     public static class AnimationSequenceEditorGUIUtility
     {
-        private static Dictionary<Type, GUIContent> _cachedTypeToDisplayName;
+        private static Dictionary<Type, GUIContent> cachedTypeToDisplayName;
         public static Dictionary<Type, GUIContent> TypeToDisplayName
         {
             get
             {
                 CacheDisplayTypes();
-                return _cachedTypeToDisplayName;
+                return cachedTypeToDisplayName;
             }
         }
         
-        private static Dictionary<Type, GUIContent> _cachedTypeToInstance;
+        private static Dictionary<Type, GUIContent> cachedTypeToInstance;
         public static Dictionary<Type, GUIContent> TypeToParentDisplay
         {
             get
             {
                 CacheDisplayTypes();
-                return _cachedTypeToInstance;
+                return cachedTypeToInstance;
             }
         }
 
         
-        private static Dictionary<Type, DOTweenActionBase> _typeToInstanceCache;
+        private static Dictionary<Type, DOTweenActionBase> typeToInstanceCache;
         public static Dictionary<Type, DOTweenActionBase> TypeToInstanceCache
         {
             get
             {
                 CacheDisplayTypes();
-                return _typeToInstanceCache;
+                return typeToInstanceCache;
             }
         }
         
-        private static DOTweenActionsAdvancedDropdown _cachedDOTweenActionsDropdown;
+        private static DOTweenActionsAdvancedDropdown cachedDOTweenActionsDropdown;
         public static DOTweenActionsAdvancedDropdown DOTweenActionsDropdown
         {
             get
             {
-                if (_cachedDOTweenActionsDropdown == null)
-                    _cachedDOTweenActionsDropdown = new DOTweenActionsAdvancedDropdown(new AdvancedDropdownState());
-                return _cachedDOTweenActionsDropdown;
+                if (cachedDOTweenActionsDropdown == null)
+                    cachedDOTweenActionsDropdown = new DOTweenActionsAdvancedDropdown(new AdvancedDropdownState());
+                return cachedDOTweenActionsDropdown;
             }
         }
         
@@ -61,12 +62,12 @@ namespace com.ktgame.animation_sequencer.editor
 
         private static void CacheDisplayTypes()
         {
-            if (_cachedTypeToDisplayName != null)
+            if (cachedTypeToDisplayName != null)
                 return;
 
-            _cachedTypeToDisplayName = new Dictionary<Type, GUIContent>();
-            _cachedTypeToInstance = new Dictionary<Type, GUIContent>();
-            _typeToInstanceCache = new Dictionary<Type, DOTweenActionBase>();
+            cachedTypeToDisplayName = new Dictionary<Type, GUIContent>();
+            cachedTypeToInstance = new Dictionary<Type, GUIContent>();
+            typeToInstanceCache = new Dictionary<Type, DOTweenActionBase>();
             
             TypeCache.TypeCollection types = TypeCache.GetTypesDerivedFrom(typeof(DOTweenActionBase));
             for (int i = 0; i < types.Count; i++)
@@ -87,34 +88,28 @@ namespace com.ktgame.animation_sequencer.editor
                     {
                         image = targetComponentGUIContent.image
                     };
-                    _cachedTypeToInstance.Add(type, parentGUIContent);
+                    cachedTypeToInstance.Add(type, parentGUIContent);
                 }
                 
-                _cachedTypeToDisplayName.Add(type, guiContent);
-                _typeToInstanceCache.Add(type, doTweenActionBaseInstance);
+                cachedTypeToDisplayName.Add(type, guiContent);
+                typeToInstanceCache.Add(type, doTweenActionBaseInstance);
             }
         }
         
         public static bool CanActionBeAppliedToTarget(Type targetActionType, GameObject targetGameObject)
         {
             if (targetGameObject == null)
-            {
                 return false;
-            }
 
             if (TypeToInstanceCache.TryGetValue(targetActionType, out DOTweenActionBase actionBaseInstance))
             {
                 Type requiredComponent = actionBaseInstance.TargetComponentType;
                 
                 if (requiredComponent == typeof(Transform))
-                {
                     return true;
-                }
-
+                    
                 if (requiredComponent == typeof(RectTransform))
-                {
                     return targetGameObject.transform is RectTransform;
-                }
 
                 return targetGameObject.GetComponent(requiredComponent) != null;
             }
@@ -166,74 +161,75 @@ namespace com.ktgame.animation_sequencer.editor
             }
         }
         
-        private static GUIContent _cachedStopButtonGUIContent;
+        private static GUIContent cachedStopButtonGUIContent;
         internal static GUIContent StopButtonGUIContent
         {
             get
             {
-                if (_cachedStopButtonGUIContent == null)
+                if (cachedStopButtonGUIContent == null)
                 {
-                    _cachedStopButtonGUIContent = EditorGUIUtility.IconContent("animationdopesheetkeyframe");
-                    _cachedStopButtonGUIContent.tooltip = "Stop";
+                    cachedStopButtonGUIContent = EditorGUIUtility.IconContent("animationdopesheetkeyframe");
+                    cachedStopButtonGUIContent.tooltip = "Stop";
                 }
-                return _cachedStopButtonGUIContent;
+                return cachedStopButtonGUIContent;
             }
         }
         
-        private static GUIContent _cachedForwardButtonGUIContent;
+        private static GUIContent cachedForwardButtonGUIContent;
         internal static GUIContent ForwardButtonGUIContent
         {
             get
             {
-                if (_cachedForwardButtonGUIContent == null)
+                if (cachedForwardButtonGUIContent == null)
                 {
-                    _cachedForwardButtonGUIContent = EditorGUIUtility.IconContent("d_endButton");
-                    _cachedForwardButtonGUIContent.tooltip = "Fast Forward";
+                    cachedForwardButtonGUIContent = EditorGUIUtility.IconContent("d_endButton");
+                    cachedForwardButtonGUIContent.tooltip = "Fast Forward";
                 }
-                return _cachedForwardButtonGUIContent;
+                return cachedForwardButtonGUIContent;
             }
         }
         
-        private static GUIContent _cachedPauseButtonGUIContent;
+        private static GUIContent cachedPauseButtonGUIContent;
         internal static GUIContent PauseButtonGUIContent
         {
             get
             {
-                if (_cachedPauseButtonGUIContent == null)
+                if (cachedPauseButtonGUIContent == null)
                 {
-                    _cachedPauseButtonGUIContent = EditorGUIUtility.IconContent("d_PauseButton@2x");
-                    _cachedPauseButtonGUIContent.tooltip = "Pause";
+                    cachedPauseButtonGUIContent = EditorGUIUtility.IconContent("d_PauseButton@2x");
+                    cachedPauseButtonGUIContent.tooltip = "Pause";
                 }
-                return _cachedPauseButtonGUIContent;
+                return cachedPauseButtonGUIContent;
             }
         }
         
-        private static GUIContent _cachedPlayButtonGUIContent;
+        private static GUIContent cachedPlayButtonGUIContent;
         internal static GUIContent PlayButtonGUIContent
         {
             get
             {
-                if (_cachedPlayButtonGUIContent == null)
+                if (cachedPlayButtonGUIContent == null)
                 {
-                    _cachedPlayButtonGUIContent = EditorGUIUtility.IconContent("d_PlayButton@2x");
-                    _cachedPlayButtonGUIContent.tooltip = "Play";
+                    cachedPlayButtonGUIContent = EditorGUIUtility.IconContent("d_PlayButton@2x");
+                    cachedPlayButtonGUIContent.tooltip = "Play";
                 }
-                return _cachedPlayButtonGUIContent;
+                return cachedPlayButtonGUIContent;
             }
         }
         
-        private static GUIContent _cachedSaveAsDefaultGUIContent;
+        private static GUIContent cachedSaveAsDefaultGUIContent;
         internal static GUIContent SaveAsDefaultButtonGUIContent
         {
             get
             {
-                if (_cachedSaveAsDefaultGUIContent == null)
+                if (cachedSaveAsDefaultGUIContent == null)
                 {
-                    _cachedSaveAsDefaultGUIContent = EditorGUIUtility.IconContent("d_SaveAs");
-                    _cachedSaveAsDefaultGUIContent.tooltip = "Save as Default";
+                    cachedSaveAsDefaultGUIContent = EditorGUIUtility.IconContent("d_SaveAs");
+                    cachedSaveAsDefaultGUIContent.tooltip = "Save as Default";
                 }
-                return _cachedSaveAsDefaultGUIContent;
+                return cachedSaveAsDefaultGUIContent;
             }
         }
     }
 }
+#endif

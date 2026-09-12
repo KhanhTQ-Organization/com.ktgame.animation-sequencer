@@ -1,18 +1,19 @@
-﻿#if DOTWEEN_ENABLED
+#if DOTWEEN_ENABLED
+#if TMP_ENABLED
+
 using System;
 using DG.Tweening;
-using DG.Tweening.Core;
-using DG.Tweening.Plugins.Options;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace BrunoMikoski.AnimationSequencer
 {
+
     [Serializable]
-    public sealed class FadeGraphicDOTweenAction : DOTweenActionBase
+    public sealed class TMP_FadeDOTweenAction : DOTweenActionBase
     {
-        public override Type TargetComponentType => typeof(Graphic);
-        public override string DisplayName => "Fade Graphic";
+        public override Type TargetComponentType => typeof(TMP_Text);
+        public override string DisplayName => "TMP Fade Text";
 
         [SerializeField]
         private float alpha;
@@ -21,50 +22,49 @@ namespace BrunoMikoski.AnimationSequencer
             get => alpha;
             set => alpha = value;
         }
-
-        private Graphic targetGraphic;
+        
+        private TMP_Text tmpTextComponent;
         private float previousAlpha;
 
         protected override Tweener GenerateTween_Internal(GameObject target, float duration)
         {
-            if (targetGraphic == null)
+            if (tmpTextComponent == null)
             {
-                targetGraphic = target.GetComponent<Graphic>();
-                if (targetGraphic == null)
+                tmpTextComponent = target.GetComponent<TMP_Text>();
+                if (tmpTextComponent == null)
                 {
                     Debug.LogError($"{target} does not have {TargetComponentType} component");
                     return null;
                 }
             }
 
-            previousAlpha = targetGraphic.color.a;
-            TweenerCore<Color, Color, ColorOptions> graphicTween = targetGraphic.DOFade(alpha, duration);
-            
+            previousAlpha = tmpTextComponent.alpha;
+            var tween = tmpTextComponent.DOFade(alpha, duration);
+
 #if UNITY_EDITOR 
             if (!Application.isPlaying)
             {
                 // Work around a Unity bug where updating the colour does not cause any visual change outside of PlayMode.
                 // https://forum.unity.com/threads/editor-scripting-force-color-update.798663/
-                graphicTween.OnUpdate(() =>
+                tween.OnUpdate(() =>
                 {
-                    targetGraphic.enabled = false;
-                    targetGraphic.enabled = true;
+                    tmpTextComponent.transform.localScale = new Vector3(1.001f, 1.001f, 1.001f);
+                    tmpTextComponent.transform.localScale = new Vector3(1, 1, 1);
                 });
             }
 #endif
-                
-            return graphicTween;
+            
+            return tween;
         }
 
         public override void ResetToInitialState()
         {
-            if (targetGraphic == null)
+            if (tmpTextComponent == null)
                 return;
 
-            Color color = targetGraphic.color;
-            color.a = previousAlpha;
-            targetGraphic.color = color;
+            tmpTextComponent.alpha = previousAlpha;
         }
     }
 }
+#endif
 #endif

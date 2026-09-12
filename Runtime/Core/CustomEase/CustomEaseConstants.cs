@@ -1,6 +1,7 @@
+﻿#if DOTWEEN_ENABLED
 using DG.Tweening;
 
-namespace com.ktgame.animation_sequencer
+namespace BrunoMikoski.AnimationSequencer
 {
     public partial class CustomEase
     {
@@ -41,3 +42,4 @@ namespace com.ktgame.animation_sequencer
         public static CustomEase InOutFlash => new CustomEase(Ease.InOutFlash);
     }
 }
+#endif

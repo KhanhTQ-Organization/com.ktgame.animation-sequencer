@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer.editor
+namespace BrunoMikoski.AnimationSequencer
 {
     //From https://github.com/baba-s/UniScriptableObjectForPreferences/blob/master/Editor/ScriptableObjectForPreferences.cs
     public abstract class ScriptableObjectForPreferences<T> : ScriptableObject

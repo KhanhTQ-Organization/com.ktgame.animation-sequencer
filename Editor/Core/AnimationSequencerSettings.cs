@@ -1,20 +1,23 @@
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer.editor
+namespace BrunoMikoski.AnimationSequencer
 {
-	public sealed class AnimationSequencerSettings : ScriptableObjectForPreferences<AnimationSequencerSettings>
-	{
-		public bool AutoHideStepsWhenPreviewing => _autoHideStepsWhenPreviewing;
-		public bool DrawTimingsWhenPreviewing   => _drawTimingsWhenPreviewing;
-		
-		[SerializeField] private bool _autoHideStepsWhenPreviewing = true;
-		[SerializeField] private bool _drawTimingsWhenPreviewing = true;
+    public sealed class AnimationSequencerSettings : ScriptableObjectForPreferences<AnimationSequencerSettings>
+    {
+        [SerializeField]
+        private bool autoHideStepsWhenPreviewing = true;
 
-		[SettingsProvider]
-		private static SettingsProvider SettingsProvider()
-		{
-			return CreateSettingsProvider("Animation Sequencer", null);
-		}
-	}
+        [SerializeField]
+        private bool drawTimingsWhenPreviewing = true;
+        
+        public bool AutoHideStepsWhenPreviewing => autoHideStepsWhenPreviewing;
+        public bool DrawTimingsWhenPreviewing   => drawTimingsWhenPreviewing;
+
+        [SettingsProvider]
+        private static SettingsProvider SettingsProvider()
+        {
+            return CreateSettingsProvider("Animation Sequencer", null);
+        }
+    }
 }

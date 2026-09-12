@@ -1,3 +1,6 @@
+#if DOTWEEN_ENABLED
+#if TMP_ENABLED
+
 using System;
 using DG.Tweening;
 using DG.Tweening.Core;
@@ -5,70 +8,73 @@ using DG.Tweening.Plugins.Options;
 using TMPro;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer
+namespace BrunoMikoski.AnimationSequencer
 {
+
     [Serializable]
     public sealed class TMP_TextDOTweenAction : DOTweenActionBase
     {
         public override Type TargetComponentType => typeof(TMP_Text);
         public override string DisplayName => "TMP Text";
 
-        [SerializeField] private string _text;
+        [SerializeField]
+        private string text;
         public string Text
         {
-            get => _text;
-            set => _text = value;
+            get => text;
+            set => text = value;
         }
 
-        [SerializeField] private bool _richText;
+        [SerializeField]
+        private bool richText;
         public bool RichText
         {
-            get => _richText;
-            set => _richText = value;
+            get => richText;
+            set => richText = value;
         }
 
-        [SerializeField] private ScrambleMode _scrambleMode = ScrambleMode.None;
+        [SerializeField]
+        private ScrambleMode scrambleMode = ScrambleMode.None;
         public ScrambleMode ScrambleMode
         {
-            get => _scrambleMode;
-            set => _scrambleMode = value;
+            get => scrambleMode;
+            set => scrambleMode = value;
         }
         
-        private TMP_Text _tmpTextComponent;
-        private TMP_Text _previousTarget;
-        private string _previousText;
+        private TMP_Text tmpTextComponent;
+        
+        private string previousText;
+        private TMP_Text previousTarget;
 
         protected override Tweener GenerateTween_Internal(GameObject target, float duration)
         {
-            if (_tmpTextComponent == null)
+            if (tmpTextComponent == null)
             {
-                _tmpTextComponent = target.GetComponent<TMP_Text>();
-                if (_tmpTextComponent == null)
+                tmpTextComponent = target.GetComponent<TMP_Text>();
+                if (tmpTextComponent == null)
                 {
                     Debug.LogError($"{target} does not have {TargetComponentType} component");
                     return null;
                 }
             }
 
-            _previousText = _tmpTextComponent.text;
-            _previousTarget = _tmpTextComponent;
-            TweenerCore<string, string, StringOptions> tween = _tmpTextComponent.DOText(_text, duration, _richText, _scrambleMode);
+            previousText = tmpTextComponent.text;
+            previousTarget = tmpTextComponent;
+            TweenerCore<string, string, StringOptions> tween = tmpTextComponent.DOText(text, duration, richText, scrambleMode);
             return tween;
         }
 
         public override void ResetToInitialState()
         {
-            if (_previousTarget == null)
-            {
+            if (previousTarget == null)
                 return;
-            }
-
-            if (string.IsNullOrEmpty(_previousText))
-            {
+            
+            if (string.IsNullOrEmpty(previousText))
                 return;
-            }
 
-            _previousTarget.text = _previousText;
+            previousTarget.text = previousText;
         }
     }
 }
+#endif
+#endif

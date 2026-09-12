@@ -1,24 +1,30 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace com.ktgame.animation_sequencer
+namespace BrunoMikoski.AnimationSequencer
 {
     [Serializable]
     public sealed class SetTargetTransformPropertiesStep : AnimationStepBase
     {
         public override string DisplayName => "Set Target Transform Properties";
-        [FormerlySerializedAs("targetGameObject")] [SerializeField] private Transform targetTransform;
+        [FormerlySerializedAs("targetGameObject")] [SerializeField]
+        private Transform targetTransform;
         
-        [SerializeField] private bool _useLocal;
-        [SerializeField] private Vector3 _position;
-        [SerializeField] private Vector3 _eulerAngles;
-        [SerializeField] private Vector3 _scale = Vector3.one;
+        [SerializeField]
+        private bool useLocal;
+        [SerializeField]
+        private Vector3 position;
+        [SerializeField] 
+        private Vector3 eulerAngles;
+        [SerializeField] 
+        private Vector3 scale = Vector3.one;
 
-        private Vector3 _originalPosition;
-        private Vector3 _originalEulerAngles;
-        private Vector3 _originalScale;
+        private Vector3 originalPosition;
+        private Vector3 originalEulerAngles;
+        private Vector3 originalScale;
         
         public override void AddTweenToSequence(Sequence animationSequence)
         {
@@ -27,25 +33,25 @@ namespace com.ktgame.animation_sequencer
 
             behaviourSequence.AppendCallback(() =>
             {
-                if (_useLocal)
+                if (useLocal)
                 {
-                    _originalPosition = targetTransform.localPosition;
-                    _originalEulerAngles = targetTransform.localEulerAngles;
+                    originalPosition = targetTransform.localPosition;
+                    originalEulerAngles = targetTransform.localEulerAngles;
                     
-                    targetTransform.localPosition = _position;
-                    targetTransform.localEulerAngles = _eulerAngles;
+                    targetTransform.localPosition = position;
+                    targetTransform.localEulerAngles = eulerAngles;
                 }
                 else
                 {
-                    _originalPosition = targetTransform.position;
-                    _originalEulerAngles = targetTransform.eulerAngles;
+                    originalPosition = targetTransform.position;
+                    originalEulerAngles = targetTransform.eulerAngles;
                     
-                    targetTransform.position = _position;
-                    targetTransform.eulerAngles = _eulerAngles;
+                    targetTransform.position = position;
+                    targetTransform.eulerAngles = eulerAngles;
                 }
 
-                _originalScale = targetTransform.localScale; 
-                targetTransform.localScale = _scale;
+                originalScale = targetTransform.localScale; 
+                targetTransform.localScale = scale;
             });
             if (FlowType == FlowType.Join)
                 animationSequence.Join(behaviourSequence);
@@ -55,17 +61,17 @@ namespace com.ktgame.animation_sequencer
 
         public override void ResetToInitialState()
         {
-            if (_useLocal)
+            if (useLocal)
             {
-                targetTransform.localPosition = _originalPosition;
-                targetTransform.localEulerAngles = _originalEulerAngles;
+                targetTransform.localPosition = originalPosition;
+                targetTransform.localEulerAngles = originalEulerAngles;
             }
             else
             {
-                targetTransform.position = _originalPosition;
-                targetTransform.eulerAngles = _originalEulerAngles;
+                targetTransform.position = originalPosition;
+                targetTransform.eulerAngles = originalEulerAngles;
             }
-            targetTransform.localScale = _originalScale;
+            targetTransform.localScale = originalScale;
         }
         
         public override string GetDisplayNameForEditor(int index)
@@ -78,3 +84,4 @@ namespace com.ktgame.animation_sequencer
         }   
     }
 }
+#endif

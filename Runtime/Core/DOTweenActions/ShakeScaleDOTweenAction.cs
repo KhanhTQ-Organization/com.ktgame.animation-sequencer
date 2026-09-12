@@ -1,62 +1,68 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using DG.Tweening;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer
+namespace BrunoMikoski.AnimationSequencer
 {
-	[Serializable]
-	public sealed class ShakeScaleDOTweenAction : DOTweenActionBase
-	{
-		public override Type TargetComponentType => typeof(Transform);
-		public override string DisplayName => "Shake Scale";
+    [Serializable]
+    public sealed class ShakeScaleDOTweenAction : DOTweenActionBase
+    {
+        public override Type TargetComponentType => typeof(Transform);
+        public override string DisplayName => "Shake Scale";
 
-		[SerializeField] private Vector3 _strength;
-		public Vector3 Strength
-		{
-			get => _strength;
-			set => _strength = value;
-		}
+        [SerializeField]
+        private Vector3 strength;
+        public Vector3 Strength
+        {
+            get => strength;
+            set => strength = value;
+        }
 
-		[SerializeField] private int _vibrato = 10;
-		public int Vibrato
-		{
-			get => _vibrato;
-			set => _vibrato = value;
-		}
+        [SerializeField]
+        private int vibrato = 10;
+        public int Vibrato
+        {
+            get => vibrato;
+            set => vibrato = value;
+        }
 
-		[SerializeField] private float _randomness = 90;
-		public float Randomness
-		{
-			get => _randomness;
-			set => _randomness = value;
-		}
+        [SerializeField]
+        private float randomness = 90;
+        public float Randomness
+        {
+            get => randomness;
+            set => randomness = value;
+        }
 
-		[SerializeField] private bool _fadeout = true;
-		public bool Fadeout
-		{
-			get => _fadeout;
-			set => _fadeout = value;
-		}
+        [SerializeField]
+        private bool fadeout = true;
+        public bool Fadeout
+        {
+            get => fadeout;
+            set => fadeout = value;
+        }
 
-		private Transform _previousTarget;
-		private Vector3 _previousScale;
+        private Transform previousTarget;
+        private Vector3 previousScale;
 
-		protected override Tweener GenerateTween_Internal(GameObject target, float duration)
-		{
-			_previousTarget = target.transform;
-			_previousScale = _previousTarget.localScale;
+        protected override Tweener GenerateTween_Internal(GameObject target, float duration)
+        {
+            previousTarget = target.transform;
+            previousScale = previousTarget.localScale;
             
-			Tweener tween = _previousTarget.DOShakeScale(duration, _strength, _vibrato, _randomness, _fadeout);
+            Tweener tween = previousTarget.DOShakeScale(duration, strength, vibrato, randomness, fadeout);
 
-			return tween;
-		}
+            return tween;
+        }
 
-		public override void ResetToInitialState()
-		{
-			if (_previousTarget == null)
-				return;
+        public override void ResetToInitialState()
+        {
+            if (previousTarget == null)
+                return;
             
-			_previousTarget.localScale = _previousScale;
-		}
-	}
+            previousTarget.localScale = previousScale;
+        }
+    }
 }
+#endif

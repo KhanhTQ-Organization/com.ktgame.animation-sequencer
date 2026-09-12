@@ -1,16 +1,18 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using UnityEditor.IMGUI.Controls;
 
-namespace com.ktgame.animation_sequencer.editor
+namespace BrunoMikoski.AnimationSequencer
 {
-	public sealed class AnimationStepAdvancedDropdownItem : AdvancedDropdownItem
-	{
-		private readonly Type _animationStepType;
-		public Type AnimationStepType => _animationStepType;
+    public sealed class AnimationStepAdvancedDropdownItem : AdvancedDropdownItem
+    {
+        private readonly Type animationStepType;
+        public Type AnimationStepType => animationStepType;
 
-		public AnimationStepAdvancedDropdownItem(AnimationStepBase animationStepBase, string displayName) : base(displayName)
-		{
-			_animationStepType = animationStepBase.GetType();
-		}
-	}
+        public AnimationStepAdvancedDropdownItem(AnimationStepBase animationStepBase, string displayName) : base(displayName)
+        {
+            animationStepType = animationStepBase.GetType();
+        }
+    }
 }
+#endif

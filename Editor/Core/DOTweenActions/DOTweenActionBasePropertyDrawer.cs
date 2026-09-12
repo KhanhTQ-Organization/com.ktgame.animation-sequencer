@@ -1,8 +1,9 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using UnityEditor;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer.editor
+namespace BrunoMikoski.AnimationSequencer
 {
     [CustomPropertyDrawer(typeof(DOTweenActionBase), true)]
     public sealed class DOTweenActionBasePropertyDrawer : PropertyDrawer
@@ -57,3 +58,4 @@ namespace com.ktgame.animation_sequencer.editor
         }
     }
 }
+#endif

@@ -1,19 +1,22 @@
+#if DOTWEEN_ENABLED
 using System;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer
+namespace BrunoMikoski.AnimationSequencer
 {
-	[Serializable]
-	public sealed class PathPositionDOTweenActionBase : PathDOTweenActionBase
-	{
-		[SerializeField] private Vector3[] _positions;
-		public Vector3[] Positions => _positions;
+    [Serializable]
+    public sealed class PathPositionDOTweenActionBase : PathDOTweenActionBase
+    {
+        [SerializeField]
+        private Vector3[] positions;
+        public Vector3[] Positions => positions;
 
-		public override string DisplayName => "Move to Path Positions" ;
+        public override string DisplayName => "Move to Path Positions" ;
 
-		protected override Vector3[] GetPathPositions()
-		{
-			return _positions;
-		}
-	}
+        protected override Vector3[] GetPathPositions()
+        {
+            return positions;
+        }
+    }
 }
+#endif

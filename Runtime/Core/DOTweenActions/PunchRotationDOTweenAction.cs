@@ -1,56 +1,59 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using DG.Tweening;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer
+namespace BrunoMikoski.AnimationSequencer
 {
-	[Serializable]
-	public sealed class PunchRotationDOTweenAction : DOTweenActionBase
-	{
-		public override Type TargetComponentType => typeof(Transform);
-		public override string DisplayName => "Punch Rotation";
+    [Serializable]
+    public sealed class PunchRotationDOTweenAction : DOTweenActionBase
+    {
+        public override Type TargetComponentType => typeof(Transform);
+        public override string DisplayName => "Punch Rotation";
 
-		[SerializeField] private Vector3 _punch;
-		public Vector3 Punch
-		{
-			get => _punch;
-			set => _punch = value;
-		}
+        [SerializeField]
+        private Vector3 punch;
+        public Vector3 Punch
+        {
+            get => punch;
+            set => punch = value;
+        }
 
-		[SerializeField] private int _vibrato = 10;
-		public int Vibrato
-		{
-			get => _vibrato;
-			set => _vibrato = value;
-		}
+        [SerializeField]
+        private int vibrato = 10;
+        public int Vibrato
+        {
+            get => vibrato;
+            set => vibrato = value;
+        }
 
-		[SerializeField] private float _elasticity = 1f;
-		public float Elasticity
-		{
-			get => _elasticity;
-			set => _elasticity = value;
-		}
+        [SerializeField]
+        private float elasticity = 1f;
+        public float Elasticity
+        {
+            get => elasticity;
+            set => elasticity = value;
+        }
 
-		private Transform _previousTarget;
-		private Quaternion _previousRotation;
+        private Transform previousTarget;
+        private Quaternion previousRotation;
 
-		protected override Tweener GenerateTween_Internal(GameObject target, float duration)
-		{
-			_previousTarget = target.transform;
-			_previousRotation = target.transform.rotation;
-			Tweener tween = target.transform.DOPunchRotation(_punch, duration, _vibrato, _elasticity);
+        protected override Tweener GenerateTween_Internal(GameObject target, float duration)
+        {
+            previousTarget = target.transform;
+            previousRotation = target.transform.rotation;
+            Tweener tween = target.transform.DOPunchRotation(punch, duration, vibrato, elasticity);
 
-			return tween;
-		}
+            return tween;
+        }
 
-		public override void ResetToInitialState()
-		{
-			if (_previousTarget == null)
-			{
-				return;
-			}
-
-			_previousTarget.rotation = _previousRotation;
-		}
-	}
+        public override void ResetToInitialState()
+        {
+            if (previousTarget == null)
+                return;
+            
+            previousTarget.rotation = previousRotation;
+        }
+    }
 }
+#endif

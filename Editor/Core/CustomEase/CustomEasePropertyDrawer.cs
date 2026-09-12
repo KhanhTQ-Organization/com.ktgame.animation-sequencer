@@ -1,18 +1,19 @@
+﻿#if DOTWEEN_ENABLED
 using DG.Tweening;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer.editor
+namespace BrunoMikoski.AnimationSequencer
 {
     [CustomPropertyDrawer(typeof(CustomEase))]
     public class CustomEasePropertyDrawer : PropertyDrawer
     {
-        private static CustomEaseAdvancedDropdown _easeDropdown = new CustomEaseAdvancedDropdown(new AdvancedDropdownState());
+        private static CustomEaseAdvancedDropdown easeDropdown = new CustomEaseAdvancedDropdown(new AdvancedDropdownState());
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            SerializedProperty easeProperty = property.FindPropertyRelative("_ease");
+            SerializedProperty easeProperty = property.FindPropertyRelative("ease");
 
             if (easeProperty.enumValueIndex == (int)Ease.INTERNAL_Custom)
             {
@@ -25,7 +26,7 @@ namespace com.ktgame.animation_sequencer.editor
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            SerializedProperty easeProperty = property.FindPropertyRelative("_ease");
+            SerializedProperty easeProperty = property.FindPropertyRelative("ease");
 
             string displayName = "Custom";
             if (easeProperty.enumValueIndex != (int)Ease.INTERNAL_Custom)
@@ -50,7 +51,7 @@ namespace com.ktgame.animation_sequencer.editor
             leftAlignedButton.alignment = TextAnchor.MiddleLeft;
             if (GUI.Button(displayRect, displayName, leftAlignedButton))
             {
-                _easeDropdown.Show(displayRect, item =>
+                easeDropdown.Show(displayRect, item =>
                 {
                     easeProperty.enumValueIndex = item.EaseEnumIndex;
                     property.serializedObject.ApplyModifiedProperties();
@@ -66,7 +67,7 @@ namespace com.ktgame.animation_sequencer.editor
 
             if (easeProperty.enumValueIndex == (int)Ease.INTERNAL_Custom)
             {
-                SerializedProperty curveProperty = property.FindPropertyRelative("_curve");
+                SerializedProperty curveProperty = property.FindPropertyRelative("curve");
                 position.y += EditorGUIUtility.singleLineHeight
                     + EditorGUIUtility.standardVerticalSpacing;
                 EditorGUI.PropertyField(position, curveProperty);
@@ -78,3 +79,4 @@ namespace com.ktgame.animation_sequencer.editor
         }
     }
 }
+#endif

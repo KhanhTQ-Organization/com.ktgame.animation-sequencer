@@ -1,14 +1,16 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using System.Collections;
 using System.Collections.Generic;
+#if UNITASK_ENABLED
 using System.Threading;
 using Cysharp.Threading.Tasks;
+#endif
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
-namespace com.ktgame.animation_sequencer
+namespace BrunoMikoski.AnimationSequencer
 {
     [DisallowMultipleComponent]
     [AddComponentMenu("UI/Animation Sequencer Controller", 200)]
@@ -26,68 +28,79 @@ namespace com.ktgame.animation_sequencer
             OnEnable,
             Nothing
         }
-        public AnimationStepBase[] AnimationSteps => _animationSteps;
-        public float PlaybackSpeed => _playbackSpeed;
-        
-        [SerializeReference] private AnimationStepBase[] _animationSteps = Array.Empty<AnimationStepBase>();
-        [SerializeField] private UpdateType _updateType = UpdateType.Normal;
-        [SerializeField] private bool _timeScaleIndependent = false;
-        [SerializeField] private AutoplayType _autoplayMode = AutoplayType.Awake;
-        [SerializeField] protected bool _startPaused;
-        [SerializeField] private float _playbackSpeed = 1f; 
-        [SerializeField] protected PlayType _playType = PlayType.Forward;
-        [SerializeField] private int _loops = 0;
-        [SerializeField] private LoopType _loopType = LoopType.Restart;
-        [SerializeField] private bool _autoKill = true;
-        [SerializeField] private UnityEvent _onStartEvent = new UnityEvent();
+
+        [SerializeReference] 
+        private AnimationStepBase[] animationSteps = Array.Empty<AnimationStepBase>();
+        public AnimationStepBase[] AnimationSteps => animationSteps;
+
+        [SerializeField] 
+        private UpdateType updateType = UpdateType.Normal;
+        [SerializeField] 
+        private bool timeScaleIndependent = false;
+        [SerializeField] 
+        private AutoplayType autoplayMode = AutoplayType.Awake;
+        [SerializeField] 
+        protected bool startPaused;
+        [SerializeField] 
+        private float playbackSpeed = 1f;
+        public float PlaybackSpeed => playbackSpeed;
+        [SerializeField] 
+        protected PlayType playType = PlayType.Forward;
+        [SerializeField] 
+        private int loops = 0;
+        [SerializeField] 
+        private LoopType loopType = LoopType.Restart;
+        [SerializeField] 
+        private bool autoKill = true;
+
+        [SerializeField] 
+        private UnityEvent onStartEvent = new UnityEvent();
 
         public UnityEvent OnStartEvent
         {
-            get => _onStartEvent;
-            protected set => _onStartEvent = value;
+            get => onStartEvent;
+            protected set => onStartEvent = value;
         }
 
-        [SerializeField] private UnityEvent _onFinishedEvent = new UnityEvent();
+        [SerializeField] 
+        private UnityEvent onFinishedEvent = new UnityEvent();
 
         public UnityEvent OnFinishedEvent
         {
-            get => _onFinishedEvent;
-            protected set => _onFinishedEvent = value;
+            get => onFinishedEvent;
+            protected set => onFinishedEvent = value;
         }
 
-        [SerializeField] private UnityEvent _onProgressEvent = new UnityEvent();
-        public UnityEvent OnProgressEvent => _onProgressEvent;
+        [SerializeField] 
+        private UnityEvent onProgressEvent = new UnityEvent();
+        public UnityEvent OnProgressEvent => onProgressEvent;
 
-        private Sequence _playingSequence;
-        public Sequence PlayingSequence => _playingSequence;
-        private PlayType _playTypeInternal = PlayType.Forward;
+        private Sequence playingSequence;
+        public Sequence PlayingSequence => playingSequence;
+        private PlayType playTypeInternal = PlayType.Forward;
 #if UNITY_EDITOR
-        private bool _requiresReset = false;
+        private bool requiresReset = false;
 #endif
 
-        public bool IsPlaying => _playingSequence != null && _playingSequence.IsActive() && _playingSequence.IsPlaying();
-        public bool IsPaused => _playingSequence != null && _playingSequence.IsActive() && !_playingSequence.IsPlaying();
+        public bool IsPlaying => playingSequence != null && playingSequence.IsActive() && playingSequence.IsPlaying();
+        public bool IsPaused => playingSequence != null && playingSequence.IsActive() && !playingSequence.IsPlaying();
 
         [SerializeField, Range(0, 1)] 
-        private float _progress = -1;
+        private float progress = -1;
 
         protected virtual void Awake()
         {
-            _progress = -1;
-            if (_autoplayMode != AutoplayType.Awake)
-            {
+            progress = -1;
+            if (autoplayMode != AutoplayType.Awake)
                 return;
-            }
 
             Autoplay();
         }
 
         protected virtual void OnEnable()
         {
-            if (_autoplayMode != AutoplayType.OnEnable)
-            {
+            if (autoplayMode != AutoplayType.OnEnable)
                 return;
-            }
 
             Autoplay();
         }
@@ -95,23 +108,17 @@ namespace com.ktgame.animation_sequencer
         private void Autoplay()
         {
             Play();
-            if (_startPaused)
-            {
-                _playingSequence.Pause();
-            }
+            if (startPaused)
+                playingSequence.Pause();
         }
 
         protected virtual void OnDisable()
         {
-            if (_autoplayMode != AutoplayType.OnEnable)
-            {
+            if (autoplayMode != AutoplayType.OnEnable)
                 return;
-            }
 
-            if (_playingSequence == null)
-            {
+            if (playingSequence == null)
                 return;
-            }
 
             ClearPlayingSequence();
             // Reset the object to its initial state so that if it is re-enabled the start values are correct for
@@ -131,166 +138,159 @@ namespace com.ktgame.animation_sequencer
 
         public virtual void Play(Action onCompleteCallback)
         {
-            _playTypeInternal = _playType;
+            playTypeInternal = playType;
 
             ClearPlayingSequence();
 
             if (onCompleteCallback != null)
-            {
-                _onFinishedEvent.AddListener(onCompleteCallback.Invoke);
-            }
+                onFinishedEvent.AddListener(onCompleteCallback.Invoke);
 
-            _playingSequence = GenerateSequence();
+            playingSequence = GenerateSequence();
 
-            switch (_playTypeInternal)
+            switch (playTypeInternal)
             {
                 case PlayType.Backward:
-                    _playingSequence.PlayBackwards();
+                    playingSequence.PlayBackwards();
                     break;
 
                 case PlayType.Forward:
-                    _playingSequence.PlayForward();
+                    playingSequence.PlayForward();
                     break;
 
                 default:
-                    _playingSequence.Play();
+                    playingSequence.Play();
                     break;
             }
         }
 
         public virtual void PlayForward(bool resetFirst = true, Action onCompleteCallback = null)
         {
-            if (_playingSequence == null)
-            {
+            if (playingSequence == null)
                 Play();
-            }
 
-            _playTypeInternal = PlayType.Forward;
+            playTypeInternal = PlayType.Forward;
 
             if (onCompleteCallback != null)
-            {
-                _onFinishedEvent.AddListener(onCompleteCallback.Invoke);
-            }
+                onFinishedEvent.AddListener(onCompleteCallback.Invoke);
 
             if (resetFirst)
-            {
                 SetProgress(0);
-            }
 
-            _playingSequence.PlayForward();
+            playingSequence.PlayForward();
         }
 
         public virtual void PlayBackwards(bool completeFirst = true, Action onCompleteCallback = null)
         {
-            if (_playingSequence == null)
-            {
+            if (playingSequence == null)
                 Play();
-            }
 
-            _playTypeInternal = PlayType.Backward;
+            playTypeInternal = PlayType.Backward;
 
             if (onCompleteCallback != null)
-            {
-                _onFinishedEvent.AddListener(onCompleteCallback.Invoke);
-            }
+                onFinishedEvent.AddListener(onCompleteCallback.Invoke);
 
             if (completeFirst)
-            {
                 SetProgress(1);
-            }
 
-            _playingSequence.PlayBackwards();
+            playingSequence.PlayBackwards();
         }
 
         public virtual void SetTime(float seconds, bool andPlay = true)
         {
-            if (_playingSequence == null)
-            {
+            if (playingSequence == null)
                 Play();
-            }
 
-            _playingSequence.Goto(seconds, andPlay);
+            playingSequence.Goto(seconds, andPlay);
         }
 
         public virtual void SetProgress(float targetProgress, bool andPlay = true)
         {
-            if (_playingSequence == null)
-            {
+            if (playingSequence == null)
                 Play();
-            }
-
+            
             targetProgress = Mathf.Clamp01(targetProgress);
             
-            float duration = _playingSequence.Duration();
+            float duration = playingSequence.Duration();
             float finalTime = targetProgress * duration;
             SetTime(finalTime, andPlay);
         }
 
         public virtual void TogglePause()
         {
-            if (_playingSequence == null)
-            {
+            if (playingSequence == null)
                 return;
-            }
 
-            _playingSequence.TogglePause();
+            playingSequence.TogglePause();
         }
 
         public virtual void Pause()
         {
             if (!IsPlaying)
-            {
                 return;
-            }
 
-            _playingSequence.Pause();
+            playingSequence.Pause();
         }
 
         public virtual void Resume()
         {
-            if (_playingSequence == null)
-            {
+            if (playingSequence == null)
                 return;
-            }
 
-            _playingSequence.Play();
+            playingSequence.Play();
         }
 
 
         public virtual void Complete(bool withCallbacks = true)
         {
-            if (_playingSequence == null)
-            {
+            if (playingSequence == null)
                 return;
+            
+            // Prepare for Complete().
+            for (int i = 0; i < animationSteps.Length; i++)
+            {
+                AnimationStepBase animationStepBase = animationSteps[i];
+                animationStepBase.IsSkippingToEnd = true;
+                if (animationStepBase is InvokeCallbackAnimationStep invokeCallbackStep)
+                {
+                    invokeCallbackStep.AllowCallbacks = withCallbacks;
+                }
             }
 
-            _playingSequence.Complete(withCallbacks);
+            // Always fire callbacks so the Set steps are always fired.
+            playingSequence.Complete(withCallbacks: true);
+
+            // Reset.
+            for (int i = 0; i < animationSteps.Length; i++)
+            {
+                AnimationStepBase animationStepBase = animationSteps[i];
+                animationStepBase.IsSkippingToEnd = false;
+                if (animationStepBase is InvokeCallbackAnimationStep invokeCallbackStep)
+                {
+                    invokeCallbackStep.AllowCallbacks = true;
+                }
+            }
         }
 
         public virtual void Rewind(bool includeDelay = true)
         {
-            if (_playingSequence == null)
-            {
+            if (playingSequence == null)
                 return;
-            }
 
-            _playingSequence.Rewind(includeDelay);
+            playingSequence.Rewind(includeDelay);
         }
 
         public virtual void Kill(bool complete = false)
         {
             if (!IsPlaying)
-            {
                 return;
-            }
 
-            _playingSequence.Kill(complete);
+            playingSequence.Kill(complete);
         }
 
         public virtual IEnumerator PlayEnumerator()
         {
             Play();
-            yield return _playingSequence.WaitForCompletion();
+            yield return playingSequence.WaitForCompletion();
         }
 
         public virtual Sequence GenerateSequence()
@@ -298,79 +298,79 @@ namespace com.ktgame.animation_sequencer
             Sequence sequence = DOTween.Sequence();
 
             // Various edge cases exists with OnStart() and OnComplete(), some of which can be solved with OnRewind(),
-            // but it still leaves callbacks unfired when reversing _direction after natural completion of the animation.
+            // but it still leaves callbacks unfired when reversing direction after natural completion of the animation.
             // Rather than using the in-built callbacks, we simply bookend the Sequence with AppendCallback to ensure
             // a Start and Finish callback is always fired.
             sequence.AppendCallback(() =>
             {
-                if (_playTypeInternal == PlayType.Forward)
+                if (playTypeInternal == PlayType.Forward)
                 {
-                    _onStartEvent.Invoke();
+                    onStartEvent.Invoke();
                 }
                 else
                 {
-                    _onFinishedEvent.Invoke();
+                    onFinishedEvent.Invoke();
                 }
             });
 
-            for (int i = 0; i < _animationSteps.Length; i++)
+            for (int i = 0; i < animationSteps.Length; i++)
             {
-                AnimationStepBase animationStepBase = _animationSteps[i];
+                AnimationStepBase animationStepBase = animationSteps[i];
                 animationStepBase.AddTweenToSequence(sequence);
             }
 
             sequence.SetTarget(this);
-            sequence.SetAutoKill(_autoKill);
-            sequence.SetUpdate(_updateType, _timeScaleIndependent);
-            sequence.OnUpdate(() => { _onProgressEvent.Invoke(); });
+            sequence.SetAutoKill(autoKill);
+            sequence.SetUpdate(updateType, timeScaleIndependent);
+            sequence.OnUpdate(() => { onProgressEvent.Invoke(); });
             // See comment above regarding bookending via AppendCallback.
             sequence.AppendCallback(() =>
             {
-                if (_playTypeInternal == PlayType.Forward)
+                if (playTypeInternal == PlayType.Forward)
                 {
-                    _onFinishedEvent.Invoke();
+                    onFinishedEvent.Invoke();
                 }
                 else
                 {
-                    _onStartEvent.Invoke();
+                    onStartEvent.Invoke();
                 }
             });
 
-            int targetLoops = _loops;
+            int targetLoops = loops;
 
             if (!Application.isPlaying)
             {
-                if (_loops == -1)
+                if (loops == -1)
                 {
                     targetLoops = 10;
-                    Debug.LogWarning("Infinity sequences on editor can cause issues, using 10 _loops while on editor.");
+                    Debug.LogWarning("Infinity sequences on editor can cause issues, using 10 loops while on editor.");
                 }
             }
 
-            sequence.SetLoops(targetLoops, _loopType);
-            sequence.timeScale = _playbackSpeed;
+            sequence.SetLoops(targetLoops, loopType);
+            sequence.timeScale = playbackSpeed;
             return sequence;
         }
 
         public virtual void ResetToInitialState()
         {
-            _progress = -1.0f;
-            for (int i = _animationSteps.Length - 1; i >= 0; i--)
+            progress = -1.0f;
+            for (int i = animationSteps.Length - 1; i >= 0; i--)
             {
-                _animationSteps[i].ResetToInitialState();
+                animationSteps[i].ResetToInitialState();
             }
         }
 
         public void ClearPlayingSequence()
         {
             DOTween.Kill(this);
-            DOTween.Kill(_playingSequence);
-            _playingSequence = null;
+            DOTween.Kill(playingSequence);
+            playingSequence = null;
         }
 
         public void SetAutoplayMode(AutoplayType autoplayType)
         {
-            _autoplayMode = autoplayType;
+            autoplayMode = autoplayType;
         }
 
         public void SetPlayOnAwake(bool targetPlayOnAwake)
@@ -379,87 +379,83 @@ namespace com.ktgame.animation_sequencer
 
         public void SetPauseOnAwake(bool targetPauseOnAwake)
         {
-            _startPaused = targetPauseOnAwake;
+            startPaused = targetPauseOnAwake;
         }
 
         public void SetTimeScaleIndependent(bool targetTimeScaleIndependent)
         {
-            _timeScaleIndependent = targetTimeScaleIndependent;
+            timeScaleIndependent = targetTimeScaleIndependent;
         }
 
         public void SetPlayType(PlayType targetPlayType)
         {
-            _playType = targetPlayType;
+            playType = targetPlayType;
         }
 
         public void SetUpdateType(UpdateType targetUpdateType)
         {
-            _updateType = targetUpdateType;
+            updateType = targetUpdateType;
         }
 
         public void SetAutoKill(bool targetAutoKill)
         {
-            _autoKill = targetAutoKill;
+            autoKill = targetAutoKill;
         }
 
         public void SetLoops(int targetLoops)
         {
-            _loops = targetLoops;
+            loops = targetLoops;
         }
 
         private void Update()
         {
-            if (_progress == -1.0f)
+            if (progress == -1.0f)
                 return;
 
-            SetProgress(_progress);
+            SetProgress(progress);
         }
 
 #if UNITY_EDITOR
         // Unity Event Function called when component is added or reset.
         private void Reset()
         {
-            _requiresReset = true;
+            requiresReset = true;
         }
 
         // Used by the CustomEditor so it knows when to reset to the defaults.
         public bool IsResetRequired()
         {
-            return _requiresReset;
+            return requiresReset;
         }
 
         // Called by the CustomEditor once the reset has been completed 
         public void ResetComplete()
         {
-            _requiresReset = false;
+            requiresReset = false;
         }
 #endif
         public bool TryGetStepAtIndex<T>(int index, out T result) where T : AnimationStepBase
         {
-            if (index < 0 || index > _animationSteps.Length - 1)
+            if (index < 0 || index > animationSteps.Length - 1)
             {
                 result = null;
                 return false;
             }
 
-            result = _animationSteps[index] as T;
+            result = animationSteps[index] as T;
             return result != null;
         }
 
         public void ReplaceTarget<T>(GameObject targetGameObject) where T : GameObjectAnimationStep
         {
-            for (int i = _animationSteps.Length - 1; i >= 0; i--)
+            for (int i = animationSteps.Length - 1; i >= 0; i--)
             {
-                AnimationStepBase animationStepBase = _animationSteps[i];
+                AnimationStepBase animationStepBase = animationSteps[i];
                 if (animationStepBase == null)
-                {
                     continue;
-                }
 
                 if (animationStepBase is not T gameObjectAnimationStep)
-                {
                     continue;
-                }
 
                 gameObjectAnimationStep.SetTarget(targetGameObject);
             }
@@ -476,29 +472,26 @@ namespace com.ktgame.animation_sequencer
 
         public void ReplaceTargets(GameObject originalTarget, GameObject newTarget)
         {
-            for (int i = _animationSteps.Length - 1; i >= 0; i--)
+            for (int i = animationSteps.Length - 1; i >= 0; i--)
             {
-                AnimationStepBase animationStepBase = _animationSteps[i];
+                AnimationStepBase animationStepBase = animationSteps[i];
                 if (animationStepBase == null)
-                {
                     continue;
-                }
-
+                
                 if(animationStepBase is not GameObjectAnimationStep gameObjectAnimationStep)
-                {
                     continue;
-                }
 
                 if (gameObjectAnimationStep.Target == originalTarget)
-                {
                     gameObjectAnimationStep.SetTarget(newTarget);
-                }
             }
         }
-        
+
+#if UNITASK_ENABLED
         public async UniTask PlayAsync()
         {
             await PlayEnumerator().ToUniTask(this);
         }
+#endif
     }
 }
+#endif

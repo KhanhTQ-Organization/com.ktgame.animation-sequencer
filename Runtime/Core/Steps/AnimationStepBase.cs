@@ -1,27 +1,33 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using DG.Tweening;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer
+namespace BrunoMikoski.AnimationSequencer
 {
-	[Serializable]
-	public abstract class AnimationStepBase
-	{
-		[SerializeField] private float _delay;
-		public float Delay => _delay;
+    [Serializable]
+    public abstract class AnimationStepBase
+    {
+        [SerializeField]
+        private float delay;
+        public float Delay => delay;
 
-		[SerializeField] private FlowType _flowType;
-		public FlowType FlowType => _flowType;
+        [SerializeField]
+        private FlowType flowType;
+        public FlowType FlowType => flowType;
 
-		public abstract string DisplayName { get; }
+        public abstract string DisplayName { get; }
         
-		public abstract void AddTweenToSequence(Sequence animationSequence);
+        public abstract void AddTweenToSequence(Sequence animationSequence);
 
-		public abstract void ResetToInitialState();
+        public abstract void ResetToInitialState();
 
-		public virtual string GetDisplayNameForEditor(int index)
-		{
-			return $"{index}. {this}";
-		}
-	}
+        public virtual string GetDisplayNameForEditor(int index)
+        {
+            return $"{index}. {this}";
+        }
+
+        public bool IsSkippingToEnd { get; set; }
+    }
 }
+#endif

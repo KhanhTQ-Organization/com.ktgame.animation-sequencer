@@ -1,69 +1,65 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using DG.Tweening;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer
+namespace BrunoMikoski.AnimationSequencer
 {
-	[Serializable]
-	public sealed class SetGameObjectActiveStep : AnimationStepBase
-	{
-		public override string DisplayName => "Set Game Object Active";
+    [Serializable]
+    public sealed class SetGameObjectActiveStep : AnimationStepBase
+    {
+        public override string DisplayName => "Set Game Object Active";
 
-		[SerializeField] private GameObject _targetGameObject;
-		public GameObject TargetGameObject
-		{
-			get => _targetGameObject;
-			set => _targetGameObject = value;
-		}
+        [SerializeField]
+        private GameObject targetGameObject;
+        public GameObject TargetGameObject
+        {
+            get => targetGameObject;
+            set => targetGameObject = value;
+        }
 
-		[SerializeField] private bool _active;
-		public bool Active
-		{
-			get => _active;
-			set => _active = value;
-		}
+        [SerializeField]
+        private bool active;
+        public bool Active
+        {
+            get => active;
+            set => active = value;
+        }
 
-		private bool _wasActive;
+        private bool wasActive;
 
-		public override void AddTweenToSequence(Sequence animationSequence)
-		{
-			_wasActive = _targetGameObject.activeSelf;
-			if (_wasActive == _active)
-			{
-				return;
-			}
+        public override void AddTweenToSequence(Sequence animationSequence)
+        {
+            wasActive = targetGameObject.activeSelf;
+            if (wasActive == active)
+                return;
 
-			Sequence behaviourSequence = DOTween.Sequence();
-			behaviourSequence.SetDelay(Delay);
+            Sequence behaviourSequence = DOTween.Sequence();
+            behaviourSequence.SetDelay(Delay);
 
-			behaviourSequence.AppendCallback(() =>
-			{
-				_targetGameObject.SetActive(_active);
-			});
-			if (FlowType == FlowType.Join)
-			{
-				animationSequence.Join(behaviourSequence);
-			}
-			else
-			{
-				animationSequence.Append(behaviourSequence);
-			}
-		}
+            behaviourSequence.AppendCallback(() =>
+            {
+                targetGameObject.SetActive(active);
+            });
+            if (FlowType == FlowType.Join)
+                animationSequence.Join(behaviourSequence);
+            else
+                animationSequence.Append(behaviourSequence);
+        }
 
-		public override void ResetToInitialState()
-		{
-			_targetGameObject.SetActive(_wasActive);
-		}
+        public override void ResetToInitialState()
+        {
+            targetGameObject.SetActive(wasActive);
+        }
 
-		public override string GetDisplayNameForEditor(int index)
-		{
-			string display = "NULL";
-			if (_targetGameObject != null)
-			{
-				display = _targetGameObject.name;
-			}
-
-			return $"{index}. Set {display} Active: {_active}";
-		}    
-	}
+        public override string GetDisplayNameForEditor(int index)
+        {
+            string display = "NULL";
+            if (targetGameObject != null)
+                display = targetGameObject.name;
+            
+            return $"{index}. Set {display} Active: {active}";
+        }    
+    }
 }
+#endif

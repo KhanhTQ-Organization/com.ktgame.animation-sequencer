@@ -1,18 +1,19 @@
+﻿#if DOTWEEN_ENABLED
 using System;
 using DG.Tweening;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer.editor
+namespace BrunoMikoski.AnimationSequencer
 {
     public sealed class CustomEaseAdvancedDropdownItem : AdvancedDropdownItem
     {
-        private readonly int _easeEnumIndex;
-        public int EaseEnumIndex => _easeEnumIndex;
+        private readonly int easeEnumIndex;
+        public int EaseEnumIndex => easeEnumIndex;
 
         public CustomEaseAdvancedDropdownItem(int enumIndex, string displayName) : base(displayName)
         {
-            _easeEnumIndex = enumIndex;
+            easeEnumIndex = enumIndex;
         }
     }
     public sealed class CustomEaseAdvancedDropdown : AdvancedDropdown
@@ -58,3 +59,4 @@ namespace com.ktgame.animation_sequencer.editor
         }
     }
 }
+#endif

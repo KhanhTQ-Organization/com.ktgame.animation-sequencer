@@ -1,39 +1,38 @@
+#if DOTWEEN_ENABLED
 using System;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer
+namespace BrunoMikoski.AnimationSequencer
 {
-	[Serializable]
-	public sealed class PathTransformPositionsDOTweenActionBase : PathDOTweenActionBase
-	{
-		[SerializeField] private Transform[] _pointPositions;
-		public Transform[] PointPositions
-		{
-			get => _pointPositions;
-			set => _pointPositions = value;
-		}
+    [Serializable]
+    public sealed class PathTransformPositionsDOTweenActionBase : PathDOTweenActionBase
+    {
+        [SerializeField]
+        private Transform[] pointPositions;
+        public Transform[] PointPositions
+        {
+            get => pointPositions;
+            set => pointPositions = value;
+        }
 
-		public override string DisplayName => "Move to Path Transform Positions";
+        public override string DisplayName => "Move to Path Transform Positions";
         
-		protected override Vector3[] GetPathPositions()
-		{
-			Vector3[] result = new Vector3[_pointPositions.Length];
+        protected override Vector3[] GetPathPositions()
+        {
+            Vector3[] result = new Vector3[pointPositions.Length];
 
-			for (int i = 0; i < _pointPositions.Length; i++)
-			{
-				Transform pointTransform = _pointPositions[i];
+            for (int i = 0; i < pointPositions.Length; i++)
+            {
+                Transform pointTransform = pointPositions[i];
 
-				if (_isLocal)
-				{
-					result[i] = pointTransform.localPosition;
-				}
-				else
-				{
-					result[i] = pointTransform.position;
-				}
-			}
+                if (isLocal)
+                    result[i] = pointTransform.localPosition;
+                else
+                    result[i] = pointTransform.position;
+            }
 
-			return result;
-		}
-	}
+            return result;
+        }
+    }
 }
+#endif

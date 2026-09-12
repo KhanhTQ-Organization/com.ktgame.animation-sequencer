@@ -1,23 +1,22 @@
-﻿#if DOTWEEN_ENABLED
+#if DOTWEEN_ENABLED
 using System;
 using DG.Tweening;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace BrunoMikoski.AnimationSequencer
 {
     [Serializable]
-    public sealed class SetTargetGraphicPropertiesStep : AnimationStepBase
+    public sealed class SetTargetCanvasGroupPropertiesStep : AnimationStepBase
     {
         [SerializeField]
-        private Graphic targetGraphic;
+        private CanvasGroup targetCanvasGroup;
 
         [SerializeField] 
-        private Color targetColor = Color.white;
+        private float targetAlpha = 1f;
 
-        private Color originalColor;
+        private float originalAlpha;
         
-        public override string DisplayName => "Set Target Graphic Properties";
+        public override string DisplayName => "Set Target Canvas Group Properties";
         public override void AddTweenToSequence(Sequence animationSequence)
         {
             Sequence behaviourSequence = DOTween.Sequence();
@@ -25,8 +24,8 @@ namespace BrunoMikoski.AnimationSequencer
 
             behaviourSequence.AppendCallback(() =>
             {
-                originalColor = targetGraphic.color; 
-                targetGraphic.color = targetColor;
+                originalAlpha = targetCanvasGroup.alpha; 
+                targetCanvasGroup.alpha = targetAlpha;
             });
             if (FlowType == FlowType.Join)
                 animationSequence.Join(behaviourSequence);
@@ -36,15 +35,14 @@ namespace BrunoMikoski.AnimationSequencer
 
         public override void ResetToInitialState()
         {
-            targetGraphic.color = originalColor;
+            targetCanvasGroup.alpha = originalAlpha;
         }
-        
         
         public override string GetDisplayNameForEditor(int index)
         {
             string display = "NULL";
-            if (targetGraphic != null)
-                display = targetGraphic.name;
+            if (targetCanvasGroup != null)
+                display = targetCanvasGroup.name;
             
             return $"{index}. Set {display} Properties";
         } 

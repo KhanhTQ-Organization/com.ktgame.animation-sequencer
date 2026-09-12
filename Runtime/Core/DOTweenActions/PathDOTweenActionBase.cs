@@ -1,3 +1,4 @@
+#if DOTWEEN_ENABLED
 using System;
 using DG.Tweening;
 using DG.Tweening.Core;
@@ -5,65 +6,70 @@ using DG.Tweening.Plugins.Core.PathCore;
 using DG.Tweening.Plugins.Options;
 using UnityEngine;
 
-namespace com.ktgame.animation_sequencer
+namespace BrunoMikoski.AnimationSequencer
 {
     [Serializable]
     public abstract class PathDOTweenActionBase : DOTweenActionBase
     {
         public override Type TargetComponentType => typeof(Transform);
 
-        [SerializeField] protected bool _isLocal;
+        [SerializeField]
+        protected bool isLocal;
         public bool IsLocal
         {
-            get => _isLocal;
-            set => _isLocal = value;
+            get => isLocal;
+            set => isLocal = value;
         }
 
-        [SerializeField] private Color _gizmoColor;
+        [SerializeField]
+        private Color gizmoColor;
         public Color GizmoColor
         {
-            get => _gizmoColor;
-            set => _gizmoColor = value;
+            get => gizmoColor;
+            set => gizmoColor = value;
         }
 
-        [SerializeField] private int _resolution = 10;
+        [SerializeField]
+        private int resolution = 10;
         public int Resolution
         {
-            get => _resolution;
-            set => _resolution = value;
+            get => resolution;
+            set => resolution = value;
         }
 
-        [SerializeField] private PathMode _pathMode = PathMode.Full3D;
+        [SerializeField]
+        private PathMode pathMode = PathMode.Full3D;
         public PathMode PathMode
         {
-            get => _pathMode;
-            set => _pathMode = value;
+            get => pathMode;
+            set => pathMode = value;
         }
 
-        [SerializeField] private PathType _pathType = PathType.CatmullRom;
+        [SerializeField]
+        private PathType pathType = PathType.CatmullRom;
         public PathType PathType
         {
-            get => _pathType;
-            set => _pathType = value;
+            get => pathType;
+            set => pathType = value;
         }
 
-        private Transform _previousTarget;
-        private Vector3 _previousPosition;
+        private Transform previousTarget;
+        private Vector3 previousPosition;
 
         protected override Tweener GenerateTween_Internal(GameObject target, float duration)
         {
             TweenerCore<Vector3, Path, PathOptions> tween;
 
-            _previousTarget = target.transform;
-            if (!_isLocal)
+            previousTarget = target.transform;
+            if (!isLocal)
             {
-                tween = target.transform.DOPath(GetPathPositions(), duration, _pathType, _pathMode, _resolution, _gizmoColor);
-                _previousPosition = target.transform.position;
+                tween = target.transform.DOPath(GetPathPositions(), duration, pathType, pathMode, resolution, gizmoColor);
+                previousPosition = target.transform.position;
             }
             else
             {
-                tween = target.transform.DOLocalPath(GetPathPositions(), duration, _pathType, _pathMode, _resolution, _gizmoColor);
-                _previousPosition = target.transform.localPosition;
+                tween = target.transform.DOLocalPath(GetPathPositions(), duration, pathType, pathMode, resolution, gizmoColor);
+                previousPosition = target.transform.localPosition;
             }
 
             return tween;
@@ -73,20 +79,19 @@ namespace com.ktgame.animation_sequencer
         protected abstract Vector3[] GetPathPositions();
         public override void ResetToInitialState()
         {
-            if (_previousTarget == null)
-            {
+            if (previousTarget == null)
                 return;
-            }
-
-            if (_isLocal)
+            
+            if (isLocal)
             {
-                _previousTarget.transform.localPosition = _previousPosition;
+                previousTarget.transform.localPosition = previousPosition;
             }
             else
             {
-                _previousTarget.transform.position = _previousPosition;
+                previousTarget.transform.position = previousPosition;
             }
         }
         
     }
 }
+#endif
