@@ -20,6 +20,11 @@
             "define": "TMP_ENABLED"
         },
         {
+            "name": "com.unity.ugui",
+            "expression": "2.0.0",
+            "define": "TMP_ENABLED"
+        },
+        {
             "name": "com.ktgame.unitask",
             "expression": "",
             "define": "UNITASK_ENABLED"

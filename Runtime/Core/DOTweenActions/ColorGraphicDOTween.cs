@@ -1,4 +1,4 @@
-﻿#if DOTWEEN_ENABLED
+#if DOTWEEN_ENABLED
 using System;
 using DG.Tweening;
 using DG.Tweening.Core;
@@ -22,7 +22,7 @@ namespace BrunoMikoski.AnimationSequencer
 
         protected override Tweener GenerateTween_Internal(GameObject target, float duration)
         {
-            if (targetGraphic == null)
+            if (targetGraphic == null || targetGraphic.gameObject != target)
             {
                 targetGraphic = target.GetComponent<Graphic>();
                 if (targetGraphic == null)

@@ -26,7 +26,7 @@ namespace BrunoMikoski.AnimationSequencer
 
         protected override Tweener GenerateTween_Internal(GameObject target, float duration)
         {
-            if (targetSpriteRenderer == null)
+            if (targetSpriteRenderer == null || targetSpriteRenderer.gameObject != target)
             {
                 targetSpriteRenderer = target.GetComponent<SpriteRenderer>();
                 if (targetSpriteRenderer == null)

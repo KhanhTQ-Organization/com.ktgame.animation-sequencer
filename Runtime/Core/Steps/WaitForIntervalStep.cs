@@ -30,6 +30,11 @@ namespace BrunoMikoski.AnimationSequencer
             else
                 animationSequence.Append(sequence);        }
 
+        public override float GetEstimatedLength()
+        {
+            return Mathf.Max(0f, Delay) + Mathf.Max(0f, interval);
+        }
+
         public override void ResetToInitialState()
         {
         }

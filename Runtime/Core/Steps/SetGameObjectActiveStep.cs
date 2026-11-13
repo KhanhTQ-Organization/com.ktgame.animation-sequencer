@@ -1,4 +1,4 @@
-﻿#if DOTWEEN_ENABLED
+#if DOTWEEN_ENABLED
 using System;
 using DG.Tweening;
 using UnityEngine;
@@ -27,19 +27,28 @@ namespace BrunoMikoski.AnimationSequencer
         }
 
         private bool wasActive;
+        private bool hasRecordedState;
+
+        public override bool AddsToSequence => targetGameObject != null;
 
         public override void AddTweenToSequence(Sequence animationSequence)
         {
-            wasActive = targetGameObject.activeSelf;
-            if (wasActive == active)
+            if (targetGameObject == null)
+            {
+                Debug.LogWarning("[AnimationSequencer] Set Game Object Active step has no target, step skipped.");
                 return;
+            }
+
+            wasActive = targetGameObject.activeSelf;
+            hasRecordedState = true;
 
             Sequence behaviourSequence = DOTween.Sequence();
             behaviourSequence.SetDelay(Delay);
 
             behaviourSequence.AppendCallback(() =>
             {
-                targetGameObject.SetActive(active);
+                if (targetGameObject != null && targetGameObject.activeSelf != active)
+                    targetGameObject.SetActive(active);
             });
             if (FlowType == FlowType.Join)
                 animationSequence.Join(behaviourSequence);
@@ -49,6 +58,9 @@ namespace BrunoMikoski.AnimationSequencer
 
         public override void ResetToInitialState()
         {
+            if (targetGameObject == null || !hasRecordedState)
+                return;
+
             targetGameObject.SetActive(wasActive);
         }
 

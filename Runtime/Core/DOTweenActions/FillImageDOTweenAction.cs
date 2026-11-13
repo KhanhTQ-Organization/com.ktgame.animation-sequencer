@@ -27,7 +27,7 @@ namespace BrunoMikoski.AnimationSequencer
 
         protected override Tweener GenerateTween_Internal(GameObject target, float duration)
         {
-            if (image == null)
+            if (image == null || image.gameObject != target)
             {
                 image = target.GetComponent<Image>();
                 if (image == null)

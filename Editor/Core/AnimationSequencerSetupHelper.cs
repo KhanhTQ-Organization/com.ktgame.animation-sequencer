@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Compilation;
@@ -9,8 +10,17 @@ namespace BrunoMikoski.AnimationSequencer
     [InitializeOnLoad]
     public static class AnimationSequencerSetupHelper
     {
-        private static string SCRIPTING_DEFINE_SYMBOL = "DOTWEEN_ENABLED";
-        private static string DOTWEEN_ASSEMBLY_NAME = "DOTween.Modules";
+        private const string SCRIPTING_DEFINE_SYMBOL = "DOTWEEN_ENABLED";
+        private const string DOTWEEN_ASSEMBLY_NAME = "DOTween.Modules";
+
+        private static readonly NamedBuildTarget[] Targets =
+        {
+            NamedBuildTarget.Standalone,
+            NamedBuildTarget.Android,
+            NamedBuildTarget.iOS,
+            NamedBuildTarget.WebGL,
+        };
+
         static AnimationSequencerSetupHelper()
         {
             Assembly[] availableAssemblies = CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies);
@@ -27,38 +37,68 @@ namespace BrunoMikoski.AnimationSequencer
 
             if (foundDOTween)
             {
-                AddScriptingDefineSymbol();
+                foreach (NamedBuildTarget target in GetTargets())
+                    AddScriptingDefineSymbol(target);
             }
             else
             {
-                RemoveScriptingDefineSymbol();
+                foreach (NamedBuildTarget target in GetTargets())
+                    RemoveScriptingDefineSymbol(target);
+
                 Debug.LogWarning("No DOTween found, animation sequencer will be disabled until DOTween setup is complete and asmdef files are created");
             }
         }
 
-        private static void AddScriptingDefineSymbol()
+        private static IEnumerable<NamedBuildTarget> GetTargets()
         {
-            NamedBuildTarget namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
-            string scriptingDefineSymbols = PlayerSettings.GetScriptingDefineSymbols(namedBuildTarget);
+            var result = new List<NamedBuildTarget>(Targets);
 
-            if (scriptingDefineSymbols.Contains(SCRIPTING_DEFINE_SYMBOL))
-                return;
+            try
+            {
+                NamedBuildTarget selected = NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+                if (!result.Contains(selected))
+                    result.Add(selected);
+            }
+            catch (Exception)
+            {
+            }
 
-            PlayerSettings.SetScriptingDefineSymbols(namedBuildTarget, $"{scriptingDefineSymbols};{SCRIPTING_DEFINE_SYMBOL}");
-
-            Debug.Log($"Adding {SCRIPTING_DEFINE_SYMBOL} for {EditorUserBuildSettings.selectedBuildTargetGroup}");
+            return result;
         }
 
-        private static void RemoveScriptingDefineSymbol()
+        private static List<string> GetSymbols(NamedBuildTarget target)
         {
-            NamedBuildTarget namedBuildTarget = NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
-            string scriptingDefineSymbols = PlayerSettings.GetScriptingDefineSymbols(namedBuildTarget);
+            string symbols = PlayerSettings.GetScriptingDefineSymbols(target);
+            var list = new List<string>();
+            foreach (string symbol in symbols.Split(';'))
+            {
+                string trimmed = symbol.Trim();
+                if (trimmed.Length > 0)
+                    list.Add(trimmed);
+            }
 
-            if (!scriptingDefineSymbols.Contains(SCRIPTING_DEFINE_SYMBOL))
+            return list;
+        }
+
+        private static void AddScriptingDefineSymbol(NamedBuildTarget target)
+        {
+            List<string> symbols = GetSymbols(target);
+            if (symbols.Contains(SCRIPTING_DEFINE_SYMBOL))
                 return;
 
-            scriptingDefineSymbols = scriptingDefineSymbols.Replace(SCRIPTING_DEFINE_SYMBOL, string.Empty);
-            PlayerSettings.SetScriptingDefineSymbols(namedBuildTarget, $"{scriptingDefineSymbols}");
+            symbols.Add(SCRIPTING_DEFINE_SYMBOL);
+            PlayerSettings.SetScriptingDefineSymbols(target, string.Join(";", symbols));
+
+            Debug.Log($"Adding {SCRIPTING_DEFINE_SYMBOL} for {target.TargetName}");
+        }
+
+        private static void RemoveScriptingDefineSymbol(NamedBuildTarget target)
+        {
+            List<string> symbols = GetSymbols(target);
+            if (!symbols.Remove(SCRIPTING_DEFINE_SYMBOL))
+                return;
+
+            PlayerSettings.SetScriptingDefineSymbols(target, string.Join(";", symbols));
         }
     }
 }

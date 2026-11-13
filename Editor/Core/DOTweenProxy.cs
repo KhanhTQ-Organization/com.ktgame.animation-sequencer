@@ -1,4 +1,4 @@
-﻿#if DOTWEEN_ENABLED
+#if DOTWEEN_ENABLED
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -41,32 +41,46 @@ namespace BrunoMikoski.AnimationSequencer
         {
             try
             {
-                var timings = new (float start, float end)[steps.Length];
-                var objs = GetSequencedObjects(sequence);
-                var duration = sequence.Duration();
-
-                // take into account two SequenceCallbacks
-                // that added in AnimationSequencerController.GenerateSequence method
-                if (objs.Count != steps.Length + 2)
-                {
-                    Debug.LogError("Sequenced object count mismatch for sequence");
+                if (sequence == null || steps == null || sequencedObjects == null || sequencedPosition == null || sequencedEndPosition == null)
                     return null;
+
+                var objs = GetSequencedObjects(sequence);
+                if (objs == null)
+                    return null;
+
+                var duration = sequence.Duration();
+                if (duration <= 0f || float.IsInfinity(duration))
+                    return null;
+
+                var stepObjects = new List<ABSSequentiable>(objs.Count);
+                foreach (var obj in objs)
+                {
+                    if (obj is Tween)
+                        stepObjects.Add(obj);
                 }
 
-                for (var index = 0; index < Math.Min(timings.Length, objs.Count); index++)
+                var timings = new (float start, float end)[steps.Length];
+                int objectIndex = 0;
+                for (int i = 0; i < steps.Length; i++)
                 {
-                    var obj = objs[index + 1]; // +1 for skip Start Callback
-                    var step = steps[index];
+                    var step = steps[i];
+                    if (step == null || step.IsMuted || !step.AddsToSequence)
+                    {
+                        timings[i] = (-1f, -1f);
+                        continue;
+                    }
 
-                    var start = GetSequencedStartPosition(obj);
+                    if (objectIndex >= stepObjects.Count)
+                        return null;
+
+                    var obj = stepObjects[objectIndex++];
+                    var start = GetSequencedStartPosition(obj) + step.Delay;
                     var end = GetSequencedEndPosition(obj);
 
-                    start += step.Delay;
-
-                    timings[index] = (start / duration, end / duration);
+                    timings[i] = (start / duration, end / duration);
                 }
 
-                return timings;
+                return objectIndex == stepObjects.Count ? timings : null;
             }
             catch (Exception ex)
             {

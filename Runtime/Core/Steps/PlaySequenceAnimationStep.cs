@@ -20,6 +20,12 @@ namespace BrunoMikoski.AnimationSequencer
 
         public override void AddTweenToSequence(Sequence animationSequence)
         {
+            if (sequencer == null)
+            {
+                Debug.LogWarning("[AnimationSequencer] Play Sequence step has no sequencer assigned, step skipped.");
+                return;
+            }
+
             Sequence sequence = sequencer.GenerateSequence();
             sequence.SetDelay(Delay);
             if (FlowType == FlowType.Join)
@@ -28,9 +34,20 @@ namespace BrunoMikoski.AnimationSequencer
                 animationSequence.Append(sequence);
         }
 
+        public override bool AddsToSequence => sequencer != null;
+
+        public override float GetEstimatedLength()
+        {
+            if (sequencer == null)
+                return 0f;
+
+            return Mathf.Max(0f, Delay) + sequencer.EstimateDuration();
+        }
+
         public override void ResetToInitialState()
         {
-            sequencer.ResetToInitialState();
+            if (sequencer != null)
+                sequencer.ResetToInitialState();
         }
 
         public override string GetDisplayNameForEditor(int index)

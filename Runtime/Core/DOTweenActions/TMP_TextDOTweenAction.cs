@@ -48,7 +48,7 @@ namespace BrunoMikoski.AnimationSequencer
 
         protected override Tweener GenerateTween_Internal(GameObject target, float duration)
         {
-            if (tmpTextComponent == null)
+            if (tmpTextComponent == null || tmpTextComponent.gameObject != target)
             {
                 tmpTextComponent = target.GetComponent<TMP_Text>();
                 if (tmpTextComponent == null)
@@ -60,7 +60,11 @@ namespace BrunoMikoski.AnimationSequencer
 
             previousText = tmpTextComponent.text;
             previousTarget = tmpTextComponent;
-            TweenerCore<string, string, StringOptions> tween = tmpTextComponent.DOText(text, duration, richText, scrambleMode);
+            TMP_Text textComponent = tmpTextComponent;
+            TweenerCore<string, string, StringOptions> tween =
+                DOTween.To(() => textComponent.text, value => textComponent.text = value, text, duration);
+            tween.SetOptions(richText, scrambleMode);
+            tween.SetTarget(textComponent);
             return tween;
         }
 

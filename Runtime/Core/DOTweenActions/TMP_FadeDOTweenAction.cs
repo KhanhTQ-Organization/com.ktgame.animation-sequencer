@@ -28,7 +28,7 @@ namespace BrunoMikoski.AnimationSequencer
 
         protected override Tweener GenerateTween_Internal(GameObject target, float duration)
         {
-            if (tmpTextComponent == null)
+            if (tmpTextComponent == null || tmpTextComponent.gameObject != target)
             {
                 tmpTextComponent = target.GetComponent<TMP_Text>();
                 if (tmpTextComponent == null)
@@ -39,7 +39,9 @@ namespace BrunoMikoski.AnimationSequencer
             }
 
             previousAlpha = tmpTextComponent.alpha;
-            var tween = tmpTextComponent.DOFade(alpha, duration);
+            TMP_Text text = tmpTextComponent;
+            var tween = DOTween.ToAlpha(() => text.color, value => text.color = value, alpha, duration);
+            tween.SetTarget(text);
 
 #if UNITY_EDITOR 
             if (!Application.isPlaying)
@@ -48,8 +50,8 @@ namespace BrunoMikoski.AnimationSequencer
                 // https://forum.unity.com/threads/editor-scripting-force-color-update.798663/
                 tween.OnUpdate(() =>
                 {
-                    tmpTextComponent.transform.localScale = new Vector3(1.001f, 1.001f, 1.001f);
-                    tmpTextComponent.transform.localScale = new Vector3(1, 1, 1);
+                    text.transform.localScale = new Vector3(1.001f, 1.001f, 1.001f);
+                    text.transform.localScale = new Vector3(1, 1, 1);
                 });
             }
 #endif

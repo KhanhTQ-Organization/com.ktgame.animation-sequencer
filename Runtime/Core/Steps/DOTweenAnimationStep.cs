@@ -1,4 +1,4 @@
-﻿#if DOTWEEN_ENABLED
+#if DOTWEEN_ENABLED
 using System;
 using System.Linq;
 using DG.Tweening;
@@ -37,12 +37,21 @@ namespace BrunoMikoski.AnimationSequencer
         public override void AddTweenToSequence(Sequence animationSequence)
         {
             Sequence sequence = DOTween.Sequence();
-            for (int i = 0; i < actions.Length; i++)
+            bool delayApplied = false;
+            int actionCount = actions != null ? actions.Length : 0;
+            for (int i = 0; i < actionCount; i++)
             {
+                if (actions[i] == null)
+                    continue;
+
                 Tween tween = actions[i].GenerateTween(target, duration);
-                if (i == 0)
+                if (tween == null)
+                    continue;
+
+                if (!delayApplied)
                 {
                     tween.SetDelay(Delay);
+                    delayApplied = true;
                 }
                 sequence.Join(tween);
             }
@@ -56,11 +65,38 @@ namespace BrunoMikoski.AnimationSequencer
 
         }
 
+        public override float GetEstimatedLength()
+        {
+            if (target == null || actions == null)
+                return 0f;
+
+            bool hasAction = false;
+            for (int i = 0; i < actions.Length; i++)
+            {
+                if (actions[i] != null)
+                {
+                    hasAction = true;
+                    break;
+                }
+            }
+
+            if (!hasAction)
+                return 0f;
+
+            if (loopCount < 0)
+                return float.PositiveInfinity;
+
+            return (Mathf.Max(0f, Delay) + Mathf.Max(0f, duration)) * Mathf.Max(1, loopCount);
+        }
+
         public override void ResetToInitialState()
         {
+            if (actions == null)
+                return;
+
             for (int i = actions.Length - 1; i >= 0; i--)
             {
-                actions[i].ResetToInitialState();
+                actions[i]?.ResetToInitialState();
             }
         }
 
@@ -70,12 +106,15 @@ namespace BrunoMikoski.AnimationSequencer
             if (target != null)
                 targetName = target.name;
             
-            return $"{index}. {targetName}: {String.Join(", ", actions.Select(action => action.DisplayName)).Truncate(45)}";
+            string actionNames = actions == null
+                ? string.Empty
+                : String.Join(", ", actions.Where(action => action != null).Select(action => action.DisplayName));
+            return $"{index}. {targetName}: {actionNames.Truncate(45)}";
         }
 
         public bool TryGetActionAtIndex<T>(int index, out T result) where T: DOTweenActionBase
         {
-            if (index < 0 || index > actions.Length - 1)
+            if (actions == null || index < 0 || index > actions.Length - 1)
             {
                 result = null;
                 return false;

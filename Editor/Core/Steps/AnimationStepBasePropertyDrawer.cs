@@ -1,4 +1,4 @@
-﻿#if DOTWEEN_ENABLED
+#if DOTWEEN_ENABLED
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,12 +13,18 @@ namespace BrunoMikoski.AnimationSequencer
     [CustomPropertyDrawer(typeof(AnimationStepBase), true)]
     public class AnimationStepBasePropertyDrawer : PropertyDrawer
     {
+        private static readonly Color TimingBadgeColor = new Color(0.35f, 0.6f, 1f, 0.55f);
+        private static readonly Color IssueBadgeColor = new Color(1f, 0.25f, 0.15f, 0.8f);
+
         protected void DrawBaseGUI(Rect position, SerializedProperty property, GUIContent label, params string[] excludedPropertiesNames)
         {
-            if (GUI.Button(new Rect(position.width - 40, position.y+2, 80, EditorGUIUtility.singleLineHeight - 1), "Duplicate"))
+            Rect duplicateRect = new Rect(position.width - 40, position.y+2, 80, EditorGUIUtility.singleLineHeight - 1);
+            if (GUI.Button(duplicateRect, "Duplicate"))
             {
                 DuplicateProperty(property);
             }
+
+            DrawHeaderBadges(property, new Rect(position) { xMax = duplicateRect.xMin - 4, height = EditorGUIUtility.singleLineHeight });
 
             float originY = position.y;
 
@@ -68,6 +74,65 @@ namespace BrunoMikoski.AnimationSequencer
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             DrawBaseGUI(position, property, label);
+        }
+
+        private void DrawHeaderBadges(SerializedProperty property, Rect rect)
+        {
+            if (!(property.serializedObject.targetObject is AnimationSequencerController controller))
+                return;
+
+            int index = TryGetIndexInArray(property);
+            if (index < 0 || controller.AnimationSteps == null || index >= controller.AnimationSteps.Length)
+                return;
+
+            AnimationStepBase step = controller.AnimationSteps[index];
+            if (step == null)
+                return;
+
+            if (!step.IsMuted)
+            {
+                List<string> issues = AnimationStepValidator.GetIssues(step, controller);
+                if (issues.Count > 0)
+                {
+                    string text = issues.Count == 1 ? "1 issue" : $"{issues.Count} issues";
+                    rect = DrawBadgeRight(rect, new GUIContent(text, string.Join("\n", issues)), IssueBadgeColor);
+                }
+            }
+
+            (float start, float end)[] timings = controller.GetEstimatedStepTimings();
+            var (start, end) = timings[index];
+            if (start < 0f)
+                return;
+
+            string timing = float.IsInfinity(end)
+                ? $"{start:0.##}s → ∞"
+                : Mathf.Approximately(start, end) ? $"@ {start:0.##}s" : $"{start:0.##}s → {end:0.##}s";
+            DrawBadgeRight(rect, new GUIContent(timing, "Estimated start (after delay) → end of this step, in seconds"), TimingBadgeColor);
+        }
+
+        private static Rect DrawBadgeRight(Rect rect, GUIContent content, Color color)
+        {
+            GUIStyle style = AnimationSequencerStyles.Badge;
+            Vector2 size = style.CalcSize(content);
+            var badgeRect = new Rect(rect) { xMin = rect.xMax - size.x, height = style.fixedHeight, y = rect.y + 2 };
+
+            Color oldColor = GUI.backgroundColor;
+            GUI.backgroundColor = color;
+            GUI.Label(badgeRect, content, style);
+            GUI.backgroundColor = oldColor;
+
+            return new Rect(rect) { xMax = badgeRect.xMin - style.margin.left };
+        }
+
+        private static int TryGetIndexInArray(SerializedProperty property)
+        {
+            string path = property.propertyPath;
+            int start = path.LastIndexOf("[", StringComparison.Ordinal);
+            int end = path.LastIndexOf("]", StringComparison.Ordinal);
+            if (start < 0 || end <= start)
+                return -1;
+
+            return int.TryParse(path.Substring(start + 1, end - start - 1), out int index) ? index : -1;
         }
     
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
@@ -151,9 +216,13 @@ namespace BrunoMikoski.AnimationSequencer
                 }
 
                 var value = field.GetValue(obj);
-                if (field.FieldType.IsGenericType && field.FieldType.GetGenericTypeDefinition() == typeof(List<>))
+                if (value == null)
                 {
-                    var list = (IList)obj;
+                    field.SetValue(clone, null);
+                }
+                else if (field.FieldType.IsGenericType && field.FieldType.GetGenericTypeDefinition() == typeof(List<>))
+                {
+                    var list = (IList)value;
                     var clonedList = (IList)Activator.CreateInstance(field.FieldType);
                     foreach (var item in list)
                     {

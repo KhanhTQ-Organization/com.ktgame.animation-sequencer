@@ -1,4 +1,4 @@
-﻿#if DOTWEEN_ENABLED
+#if DOTWEEN_ENABLED
 using System;
 using DG.DOTweenEditor;
 using DG.Tweening;
@@ -195,11 +195,21 @@ namespace BrunoMikoski.AnimationSequencer
             DrawFoldoutArea("Settings", ref showSettingsPanel, DrawSettings, DrawSettingsHeader);
             DrawFoldoutArea("Callback", ref showCallbacksPanel, DrawCallbacks);
             DrawFoldoutArea("Preview", ref showPreviewPanel, DrawPreviewControls);
-            DrawFoldoutArea("Steps", ref showStepsPanel, DrawAnimationSteps, DrawAnimationStepsHeader, 50);
+            DrawFoldoutArea("Steps", ref showStepsPanel, DrawAnimationSteps, DrawAnimationStepsHeader, 230);
         }
 
         private void DrawAnimationStepsHeader(Rect rect, bool foldout)
         {
+            var badgesRect = new Rect(rect) { xMax = rect.xMax - 55 };
+
+            int issueCount = AnimationStepValidator.CountIssues(sequencerController);
+            if (issueCount > 0)
+                badgesRect = DrawAutoSizedBadgeRight(badgesRect, issueCount == 1 ? "1 issue" : $"{issueCount} issues", new Color(1f, 0.25f, 0.15f, 0.8f));
+
+            float total = sequencerController.EstimateDuration(includeLoops: false);
+            string totalText = float.IsInfinity(total) ? "Total ∞" : $"Total {total:0.##}s";
+            DrawAutoSizedBadgeRight(badgesRect, totalText, new Color(0.35f, 0.6f, 1f, 0.55f));
+
             if (!foldout)
                 return;
             
@@ -471,7 +481,8 @@ namespace BrunoMikoski.AnimationSequencer
 
                     if (AnimationSequencerSettings.GetInstance().DrawTimingsWhenPreviewing)
                         previewingTimings = DOTweenProxy.GetTimings(sequencerController.PlayingSequence,
-                            sequencerController.AnimationSteps);
+                                                sequencerController.AnimationSteps)
+                                            ?? GetEstimatedPreviewTimings();
                     else
                         previewingTimings = null;
                 }
@@ -552,6 +563,22 @@ namespace BrunoMikoski.AnimationSequencer
 
             sequencerController.PlayingSequence.GotoWithCallbacks(tweenProgress *
                                                      sequencerController.PlayingSequence.Duration());
+        }
+
+        private (float start, float end)[] GetEstimatedPreviewTimings()
+        {
+            float total = sequencerController.EstimateDuration(includeLoops: true);
+            if (total <= 0f || float.IsInfinity(total))
+                return null;
+
+            var timings = sequencerController.GetEstimatedStepTimings();
+            for (int i = 0; i < timings.Length; i++)
+            {
+                if (timings[i].start >= 0f)
+                    timings[i] = (timings[i].start / total, Mathf.Min(timings[i].end, total) / total);
+            }
+
+            return timings;
         }
 
         private float GetCurrentSequencerProgress()
@@ -646,6 +673,8 @@ namespace BrunoMikoski.AnimationSequencer
                 index >= 0 && index < previewingTimings.Length)
             {
                 var (start, end) = previewingTimings[index];
+                if (start < 0f)
+                    return;
 
                 var progress = GetCurrentSequencerProgress();
 
@@ -691,12 +720,20 @@ namespace BrunoMikoski.AnimationSequencer
             if (animationStepBase != null)
                 guiContent = new GUIContent(animationStepBase.GetDisplayNameForEditor(index + 1));
 
+            bool isMuted = animationStepBase != null && animationStepBase.IsMuted;
+            if (isMuted)
+                guiContent.text = "[Muted] " + guiContent.text;
+
             if (flowType == FlowType.Join)
                 EditorGUI.indentLevel = baseIdentLevel + 1;
             
             rect.height = EditorGUIUtility.singleLineHeight;
             rect.x += 10;
             rect.width -= 20;
+
+            Color oldColor = GUI.color;
+            if (isMuted)
+                GUI.color = new Color(oldColor.r, oldColor.g, oldColor.b, oldColor.a * 0.5f);
 
             EditorGUI.PropertyField(
                 rect,
@@ -705,6 +742,7 @@ namespace BrunoMikoski.AnimationSequencer
                 false
             );
 
+            GUI.color = oldColor;
             EditorGUI.indentLevel = baseIdentLevel;
             // DrawContextInputOnItem(element, index, rect);
         }
@@ -733,7 +771,6 @@ namespace BrunoMikoski.AnimationSequencer
             if (sequencerController != null)
             {
                 sequencerController.SetAutoplayMode(AnimationControllerDefaults.Instance.AutoplayMode);
-                sequencerController.SetPlayOnAwake(AnimationControllerDefaults.Instance.PlayOnAwake);
                 sequencerController.SetPauseOnAwake(AnimationControllerDefaults.Instance.PauseOnAwake);
                 sequencerController.SetTimeScaleIndependent(AnimationControllerDefaults.Instance.TimeScaleIndependent);
                 sequencerController.SetPlayType(AnimationControllerDefaults.Instance.PlayType);

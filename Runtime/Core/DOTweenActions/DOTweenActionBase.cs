@@ -1,4 +1,4 @@
-﻿#if DOTWEEN_ENABLED
+#if DOTWEEN_ENABLED
 using System;
 using DG.Tweening;
 using UnityEngine;
@@ -46,7 +46,16 @@ namespace BrunoMikoski.AnimationSequencer
 
         public Tween GenerateTween(GameObject target, float duration)
         {
+            if (target == null)
+            {
+                Debug.LogError($"[AnimationSequencer] {DisplayName}: target is null, action skipped.");
+                return null;
+            }
+
             Tweener tween = GenerateTween_Internal(target, duration);
+            if (tween == null)
+                return null;
+
             if (direction == AnimationDirection.From)
                 // tween.SetRelative() does not work for From variant of "Move To Anchored Position", it must be set
                 // here instead. Not sure if this is a bug in DOTween or expected behaviour...

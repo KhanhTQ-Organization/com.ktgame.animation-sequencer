@@ -1,4 +1,4 @@
-﻿#if DOTWEEN_ENABLED
+#if DOTWEEN_ENABLED
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -78,6 +78,16 @@ namespace BrunoMikoski.AnimationSequencer
         private Sequence playingSequence;
         public Sequence PlayingSequence => playingSequence;
         private PlayType playTypeInternal = PlayType.Forward;
+
+        private readonly List<UnityAction> pendingCompleteCallbacks = new List<UnityAction>();
+
+        private static readonly HashSet<AnimationSequencerController> generatingControllers = new HashSet<AnimationSequencerController>();
+
+        private static readonly HashSet<AnimationSequencerController> estimatingControllers = new HashSet<AnimationSequencerController>();
+
+        public bool HasActiveSequence => playingSequence != null && playingSequence.IsActive();
+
+        public event Action<int, AnimationStepBase> StepStarted;
 #if UNITY_EDITOR
         private bool requiresReset = false;
 #endif
@@ -142,14 +152,14 @@ namespace BrunoMikoski.AnimationSequencer
 
             ClearPlayingSequence();
 
-            if (onCompleteCallback != null)
-                onFinishedEvent.AddListener(onCompleteCallback.Invoke);
+            AddOneShotCompleteCallback(onCompleteCallback);
 
             playingSequence = GenerateSequence();
 
             switch (playTypeInternal)
             {
                 case PlayType.Backward:
+                    GotoEnd(playingSequence);
                     playingSequence.PlayBackwards();
                     break;
 
@@ -165,13 +175,12 @@ namespace BrunoMikoski.AnimationSequencer
 
         public virtual void PlayForward(bool resetFirst = true, Action onCompleteCallback = null)
         {
-            if (playingSequence == null)
+            if (!HasActiveSequence)
                 Play();
 
             playTypeInternal = PlayType.Forward;
 
-            if (onCompleteCallback != null)
-                onFinishedEvent.AddListener(onCompleteCallback.Invoke);
+            AddOneShotCompleteCallback(onCompleteCallback);
 
             if (resetFirst)
                 SetProgress(0);
@@ -181,13 +190,12 @@ namespace BrunoMikoski.AnimationSequencer
 
         public virtual void PlayBackwards(bool completeFirst = true, Action onCompleteCallback = null)
         {
-            if (playingSequence == null)
+            if (!HasActiveSequence)
                 Play();
 
             playTypeInternal = PlayType.Backward;
 
-            if (onCompleteCallback != null)
-                onFinishedEvent.AddListener(onCompleteCallback.Invoke);
+            AddOneShotCompleteCallback(onCompleteCallback);
 
             if (completeFirst)
                 SetProgress(1);
@@ -197,7 +205,7 @@ namespace BrunoMikoski.AnimationSequencer
 
         public virtual void SetTime(float seconds, bool andPlay = true)
         {
-            if (playingSequence == null)
+            if (!HasActiveSequence)
                 Play();
 
             playingSequence.Goto(seconds, andPlay);
@@ -205,7 +213,7 @@ namespace BrunoMikoski.AnimationSequencer
 
         public virtual void SetProgress(float targetProgress, bool andPlay = true)
         {
-            if (playingSequence == null)
+            if (!HasActiveSequence)
                 Play();
             
             targetProgress = Mathf.Clamp01(targetProgress);
@@ -217,7 +225,7 @@ namespace BrunoMikoski.AnimationSequencer
 
         public virtual void TogglePause()
         {
-            if (playingSequence == null)
+            if (!HasActiveSequence)
                 return;
 
             playingSequence.TogglePause();
@@ -233,22 +241,43 @@ namespace BrunoMikoski.AnimationSequencer
 
         public virtual void Resume()
         {
-            if (playingSequence == null)
+            if (!HasActiveSequence)
                 return;
 
             playingSequence.Play();
         }
 
+        public virtual void Restart(bool includeDelay = true)
+        {
+            if (!HasActiveSequence)
+            {
+                Play();
+                return;
+            }
+
+            playingSequence.Restart(includeDelay);
+        }
+
+        public void SetPlaybackSpeed(float targetPlaybackSpeed)
+        {
+            playbackSpeed = Mathf.Max(0f, targetPlaybackSpeed);
+            if (HasActiveSequence)
+                playingSequence.timeScale = playbackSpeed;
+        }
+
 
         public virtual void Complete(bool withCallbacks = true)
         {
-            if (playingSequence == null)
+            if (!HasActiveSequence)
                 return;
             
             // Prepare for Complete().
             for (int i = 0; i < animationSteps.Length; i++)
             {
                 AnimationStepBase animationStepBase = animationSteps[i];
+                if (animationStepBase == null)
+                    continue;
+
                 animationStepBase.IsSkippingToEnd = true;
                 if (animationStepBase is InvokeCallbackAnimationStep invokeCallbackStep)
                 {
@@ -263,6 +292,9 @@ namespace BrunoMikoski.AnimationSequencer
             for (int i = 0; i < animationSteps.Length; i++)
             {
                 AnimationStepBase animationStepBase = animationSteps[i];
+                if (animationStepBase == null)
+                    continue;
+
                 animationStepBase.IsSkippingToEnd = false;
                 if (animationStepBase is InvokeCallbackAnimationStep invokeCallbackStep)
                 {
@@ -273,7 +305,7 @@ namespace BrunoMikoski.AnimationSequencer
 
         public virtual void Rewind(bool includeDelay = true)
         {
-            if (playingSequence == null)
+            if (!HasActiveSequence)
                 return;
 
             playingSequence.Rewind(includeDelay);
@@ -281,22 +313,78 @@ namespace BrunoMikoski.AnimationSequencer
 
         public virtual void Kill(bool complete = false)
         {
-            if (!IsPlaying)
+            if (!HasActiveSequence)
                 return;
 
-            playingSequence.Kill(complete);
+            Sequence sequence = playingSequence;
+            sequence.Kill(complete);
+            if (playingSequence == sequence)
+            {
+                playingSequence = null;
+                ClearPendingCompleteCallbacks();
+            }
         }
 
         public virtual IEnumerator PlayEnumerator()
         {
             Play();
-            yield return playingSequence.WaitForCompletion();
+            Sequence sequence = playingSequence;
+            Func<bool> finished = TrackFinished(sequence);
+
+            while (!IsSequenceOver(sequence, finished))
+                yield return null;
+        }
+
+        private static void GotoEnd(Sequence sequence)
+        {
+            float end = sequence.Duration();
+            if (float.IsInfinity(end))
+                end = sequence.Duration(false);
+
+            sequence.Goto(end, false);
+        }
+
+        private static Func<bool> TrackFinished(Sequence sequence)
+        {
+            bool finished = false;
+            sequence.onComplete += () => finished = true;
+            sequence.onRewind += () =>
+            {
+                if (sequence.IsBackwards())
+                    finished = true;
+            };
+            return () => finished;
+        }
+
+        private bool IsSequenceOver(Sequence sequence, Func<bool> finished)
+        {
+            return finished() || !sequence.IsActive() || sequence.IsComplete() || playingSequence != sequence;
         }
 
         public virtual Sequence GenerateSequence()
         {
             Sequence sequence = DOTween.Sequence();
 
+            if (!generatingControllers.Add(this))
+            {
+                Debug.LogError($"[AnimationSequencer] {name} plays itself through a Play Sequence step (directly or via another controller). The nested step is skipped to avoid infinite recursion.", this);
+                return sequence;
+            }
+
+            try
+            {
+                BuildSequence(sequence);
+            }
+            finally
+            {
+                generatingControllers.Remove(this);
+            }
+
+            return sequence;
+        }
+
+        private void BuildSequence(Sequence sequence)
+        {
             // Various edge cases exists with OnStart() and OnComplete(), some of which can be solved with OnRewind(),
             // but it still leaves callbacks unfired when reversing direction after natural completion of the animation.
             // Rather than using the in-built callbacks, we simply bookend the Sequence with AppendCallback to ensure
@@ -313,10 +401,33 @@ namespace BrunoMikoski.AnimationSequencer
                 }
             });
 
+            float lastInsertPosition = 0f;
+            List<(float time, int index)> stepStarts = StepStarted != null ? new List<(float, int)>() : null;
+
             for (int i = 0; i < animationSteps.Length; i++)
             {
                 AnimationStepBase animationStepBase = animationSteps[i];
+                if (animationStepBase == null || animationStepBase.IsMuted)
+                    continue;
+
+                if (stepStarts != null && animationStepBase.AddsToSequence)
+                {
+                    float insertPosition = animationStepBase.FlowType == FlowType.Join ? lastInsertPosition : sequence.Duration(false);
+                    lastInsertPosition = insertPosition;
+                    stepStarts.Add((insertPosition + Mathf.Max(0f, animationStepBase.Delay), i));
+                }
+
                 animationStepBase.AddTweenToSequence(sequence);
+            }
+
+            if (stepStarts != null)
+            {
+                for (int i = 0; i < stepStarts.Count; i++)
+                {
+                    int stepIndex = stepStarts[i].index;
+                    AnimationStepBase step = animationSteps[stepIndex];
+                    sequence.InsertCallback(stepStarts[i].time, () => StepStarted?.Invoke(stepIndex, step));
+                }
             }
 
             sequence.SetTarget(this);
@@ -349,7 +460,6 @@ namespace BrunoMikoski.AnimationSequencer
 
             sequence.SetLoops(targetLoops, loopType);
             sequence.timeScale = playbackSpeed;
-            return sequence;
         }
 
         public virtual void ResetToInitialState()
@@ -357,7 +467,11 @@ namespace BrunoMikoski.AnimationSequencer
             progress = -1.0f;
             for (int i = animationSteps.Length - 1; i >= 0; i--)
             {
-                animationSteps[i].ResetToInitialState();
+                AnimationStepBase step = animationSteps[i];
+                if (step == null || step.IsMuted)
+                    continue;
+
+                step.ResetToInitialState();
             }
         }
 
@@ -366,6 +480,34 @@ namespace BrunoMikoski.AnimationSequencer
             DOTween.Kill(this);
             DOTween.Kill(playingSequence);
             playingSequence = null;
+            ClearPendingCompleteCallbacks();
+        }
+
+        private void AddOneShotCompleteCallback(Action onCompleteCallback)
+        {
+            if (onCompleteCallback == null)
+                return;
+
+            UnityAction wrapper = null;
+            wrapper = () =>
+            {
+                onFinishedEvent.RemoveListener(wrapper);
+                pendingCompleteCallbacks.Remove(wrapper);
+                onCompleteCallback();
+            };
+
+            pendingCompleteCallbacks.Add(wrapper);
+            onFinishedEvent.AddListener(wrapper);
+        }
+
+        private void ClearPendingCompleteCallbacks()
+        {
+            for (int i = 0; i < pendingCompleteCallbacks.Count; i++)
+            {
+                onFinishedEvent.RemoveListener(pendingCompleteCallbacks[i]);
+            }
+
+            pendingCompleteCallbacks.Clear();
         }
 
         public void SetAutoplayMode(AutoplayType autoplayType)
@@ -373,6 +515,7 @@ namespace BrunoMikoski.AnimationSequencer
             autoplayMode = autoplayType;
         }
 
+        [Obsolete("Has no effect. Use SetAutoplayMode(AutoplayType) instead.")]
         public void SetPlayOnAwake(bool targetPlayOnAwake)
         {
         }
@@ -407,6 +550,7 @@ namespace BrunoMikoski.AnimationSequencer
             loops = targetLoops;
         }
 
+#if UNITY_EDITOR
         private void Update()
         {
             if (progress == -1.0f)
@@ -414,6 +558,7 @@ namespace BrunoMikoski.AnimationSequencer
 
             SetProgress(progress);
         }
+#endif
 
 #if UNITY_EDITOR
         // Unity Event Function called when component is added or reset.
@@ -434,6 +579,74 @@ namespace BrunoMikoski.AnimationSequencer
             requiresReset = false;
         }
 #endif
+        public float EstimateDuration(bool includeLoops = true)
+        {
+            float single = EstimateStepTimings(null);
+            if (!includeLoops)
+                return single;
+
+            if (loops < 0)
+                return Application.isPlaying ? float.PositiveInfinity : single * 10;
+
+            return single * Mathf.Max(1, loops);
+        }
+
+        public (float start, float end)[] GetEstimatedStepTimings()
+        {
+            var timings = new (float start, float end)[animationSteps.Length];
+            EstimateStepTimings(timings);
+            return timings;
+        }
+
+        private float EstimateStepTimings((float start, float end)[] timings)
+        {
+            if (!estimatingControllers.Add(this))
+            {
+                if (timings != null)
+                {
+                    for (int i = 0; i < timings.Length; i++)
+                        timings[i] = (-1f, -1f);
+                }
+
+                return 0f;
+            }
+
+            try
+            {
+                float sequenceEnd = 0f;
+                float lastInsertPosition = 0f;
+
+                for (int i = 0; i < animationSteps.Length; i++)
+                {
+                    AnimationStepBase step = animationSteps[i];
+                    if (step == null || step.IsMuted || !step.AddsToSequence)
+                    {
+                        if (timings != null)
+                            timings[i] = (-1f, -1f);
+                        continue;
+                    }
+
+                    float insertPosition = step.FlowType == FlowType.Join ? lastInsertPosition : sequenceEnd;
+                    lastInsertPosition = insertPosition;
+
+                    float length = Mathf.Max(0f, step.GetEstimatedLength());
+                    float start = insertPosition + Mathf.Min(Mathf.Max(0f, step.Delay), length);
+                    float end = insertPosition + length;
+
+                    if (timings != null)
+                        timings[i] = (start, end);
+
+                    sequenceEnd = Mathf.Max(sequenceEnd, end);
+                }
+
+                return sequenceEnd;
+            }
+            finally
+            {
+                estimatingControllers.Remove(this);
+            }
+        }
+
         public bool TryGetStepAtIndex<T>(int index, out T result) where T : AnimationStepBase
         {
             if (index < 0 || index > animationSteps.Length - 1)
@@ -487,9 +700,64 @@ namespace BrunoMikoski.AnimationSequencer
         }
 
 #if UNITASK_ENABLED
-        public async UniTask PlayAsync()
+        public UniTask PlayAsync()
         {
-            await PlayEnumerator().ToUniTask(this);
+            return PlayAsync(CancellationToken.None);
+        }
+
+        public async UniTask PlayAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            Play();
+            Sequence sequence = playingSequence;
+            Func<bool> finished = TrackFinished(sequence);
+
+            try
+            {
+                await WaitForSequenceEnd(sequence, finished, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                KillIfStillPlaying(sequence);
+                throw;
+            }
+        }
+
+        public async UniTask<bool> TryPlayAsync(CancellationToken cancellationToken = default)
+        {
+            if (cancellationToken.IsCancellationRequested)
+                return false;
+
+            Play();
+            Sequence sequence = playingSequence;
+
+            Func<bool> finished = TrackFinished(sequence);
+
+            try
+            {
+                await WaitForSequenceEnd(sequence, finished, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                KillIfStillPlaying(sequence);
+                return false;
+            }
+
+            return finished();
+        }
+
+        private UniTask WaitForSequenceEnd(Sequence sequence, Func<bool> finished, CancellationToken cancellationToken)
+        {
+            return UniTask.WaitUntil(() => IsSequenceOver(sequence, finished), cancellationToken: cancellationToken);
+        }
+
+        private void KillIfStillPlaying(Sequence sequence)
+        {
+            if (playingSequence == sequence)
+                Kill();
+            else if (sequence.IsActive())
+                sequence.Kill();
         }
 #endif
     }
